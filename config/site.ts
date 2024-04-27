@@ -1,18 +1,42 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "",
+  name: "Tutee",
   description: "",
   navItems: [
     {
       label: "Home",
       href: "/",
     },
+    {
+      label: "About",
+      href: "/",
+    },
+    {
+      label: "Pricing",
+      href: "/",
+    },
+    {
+      label: "Contact",
+      href: "/",
+    },
   ],
   navMenuItems: [
     {
-      label: "Calendar",
-      href: "/calendar",
+      label: "Home",
+      href: "/",
+    },
+    {
+      label: "About",
+      href: "/",
+    },
+    {
+      label: "Pricing",
+      href: "/",
+    },
+    {
+      label: "Contact",
+      href: "/",
     },
   ],
   links: {},
