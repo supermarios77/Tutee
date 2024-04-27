@@ -8,7 +8,7 @@ import { useIsSSR } from "@react-aria/ssr";
 import clsx from "clsx";
 import useSound from "use-sound";
 
-import soundFile from "@/public/audio/mouse-click.mp3";
+// import soundFile from "@/public/audio/mouse-click.mp3";
 
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 
@@ -23,11 +23,11 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
 }) => {
   const { theme, setTheme } = useTheme();
   const isSSR = useIsSSR();
-  const [play] = useSound(soundFile);
+  // const [play] = useSound(soundFile);
 
   const onChange = () => {
     theme === "light" ? setTheme("dark") : setTheme("light");
-    play();
+    // play();
   };
 
   const {
