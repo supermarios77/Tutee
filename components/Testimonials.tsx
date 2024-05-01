@@ -1,24 +1,24 @@
 export default function Testimonials() {
   const testimonials = [
     {
-      quote:
-        "I'm absolutely floored by the level of care and attention to detail the team at HS have put into this theme and for one can guarantee that I will be a return customer.",
+      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
       author: "Nicole Grazioso",
     },
     {
-      quote:
-        "I never thought learning English could be this enjoyable! The materials provided are comprehensive, and the instructors are incredibly supportive.",
+      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
       author: "Jack Smith",
     },
     {
-      quote:
-        "Studying English at HS has been a game-changer for me. The interactive lessons and personalized feedback have significantly boosted my confidence.",
+      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
       author: "Emily Johnson",
     },
   ];
 
   return (
     <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-0 mx-auto">
+      <h2 className="testimonials-header">
+        Testimonials
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testimonials.map((testimonial, index) => (
           <div
@@ -33,8 +33,7 @@ export default function Testimonials() {
                 viewBox="0 0 140 47"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-              >
-              </svg>
+              ></svg>
 
               <p className=" text-gray-800 md:text-xl dark:text-white">
                 <em>&quot;{testimonial.quote}&quot;</em>

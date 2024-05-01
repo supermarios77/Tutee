@@ -25,10 +25,11 @@ export const About = () => {
                 Meet Your Teacher
               </h2>
               <p className="text-gray-500 dark:text-neutral-500">
-                Besides working with start-up enterprises as a partner for
-                digitalization, we have built enterprise products for common
-                pain points that we have encountered in various products and
-                projects.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ac
+                euismod nibh. Pellentesque habitant morbi tristique senectus et
+                netus et malesuada fames ac turpis egestas. Duis mauris libero,
+                mattis non sapien ut, fermentum rutrum lorem. Morbi convallis
+                varius risus id pharetra. Aliquam rutrum luctus commodo. Nulla
               </p>
             </div>
             <ul className="space-y-2 sm:space-y-4">
