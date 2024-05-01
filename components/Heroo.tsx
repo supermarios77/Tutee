@@ -5,7 +5,7 @@ export default function Hero() {
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="max-w-2xl text-center mx-auto">
             <h1 className="block text-3xl font-bold text-gray-800 sm:text-4xl md:text-5xl dark:text-white">
-                Unlock Your Potential with Personalized English Tutoring!
+              Unlock Your Potential with Personalized English Tutoring!
             </h1>
           </div>
 
