@@ -1,16 +1,16 @@
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
-      author: "Nicole Grazioso",
+      quote: "My tutor made English feel less daunting. Now, I navigate conversations effortlessly. Thanks for the boost!",
+      author: "Hannah, China",
     },
     {
-      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
-      author: "Jack Smith",
+      quote: "My tutors engaging sessions made learning English enjoyable. Now, I'm excited to practice every day. Thanks for making it fun!",
+      author: "Kim, South Korea",
     },
     {
-      quote: "Lorem ipsum dolor sit amet, consectetur adipiscing",
-      author: "Emily Johnson",
+      quote: "My tutors patient guidance helped me overcome language barriers. Now, I communicate fluently and feel more at ease. Thanks for the empowerment",
+      author: "Ahmed, Turkiye",
     },
   ];
 

@@ -6,7 +6,7 @@ const Pricing = () => {
       <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
         <div className="mx-auto max-w-2xl mb-8 lg:mb-14 text-center">
           <h2 className="text-3xl lg:text-4xl text-gray-800 font-bold dark:text-neutral-200">
-            Solo, agency or team? We’ve got you covered.
+            Choose Your Price Plan or Contact Us For A Personalized Plan
           </h2>
         </div>
 
@@ -15,18 +15,15 @@ const Pricing = () => {
             <div>
               <div className="p-4 relative z-10 bg-white border rounded-xl md:p-10 dark:bg-neutral-900 dark:border-neutral-800">
                 <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200">
-                  Professional
+                  Group Sessions
                 </h3>
-                <div className="text-sm text-gray-500 dark:text-neutral-500">
-                  Everything a small team needs.
-                </div>
 
                 <div className="mt-5">
                   <span className="text-6xl font-bold text-gray-800 dark:text-neutral-200">
-                    $18
+                    $59
                   </span>
                   <span className="text-lg font-bold text-gray-800 dark:text-neutral-200">
-                    .00
+                    .99
                   </span>
                   <span className="ms-3 text-gray-500 dark:text-neutral-500">
                     USD / monthly
@@ -36,7 +33,7 @@ const Pricing = () => {
                 <div className="mt-5 grid sm:grid-cols-2 gap-y-2 py-4 first:pt-0 last:pb-0 sm:gap-x-6 sm:gap-y-0">
                   <ul className="space-y-2 text-sm sm:text-base">
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -53,12 +50,12 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Up to 10 people
+                        Up to 4 people
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -75,12 +72,12 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Collect data
+                        2x30 minute sessions
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -97,13 +94,13 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Code extensibility
+                        Includes resources
                       </span>
                     </li>
                   </ul>
                   <ul className="space-y-2 text-sm sm:text-base">
                     <li className="flex space-x-3">
-                      <span className="size-5 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
+                      <span className="size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -116,17 +113,16 @@ const Pricing = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
-                          <path d="M18 6 6 18" />
-                          <path d="m6 6 12 12" />
+                          <polyline points="20 6 9 17 4 12" />
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Custom reports
+                        Interesting and interactive topics
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="size-5 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
+                      <span className="size-6 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -144,12 +140,12 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Product support
+                        Tailored teaching approach
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="size-5 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
+                      <span className="size-6 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +163,7 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Activity reporting
+                        Resources for extra learning included
                       </span>
                     </li>
                   </ul>
@@ -190,21 +186,18 @@ const Pricing = () => {
             <div>
               <div className="shadow-xl shadow-gray-200 p-5 relative z-10 bg-white border rounded-xl md:p-10 dark:bg-neutral-900 dark:border-neutral-800 dark:shadow-gray-900/20">
                 <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200">
-                  Teams
+                  One To One Sessions
                 </h3>
-                <div className="text-sm text-gray-500 dark:text-neutral-500">
-                  For growing businesses.
-                </div>
                 <span className="absolute top-0 end-0 rounded-se-xl rounded-es-xl text-xs font-medium bg-gray-800 text-white py-1.5 px-3 dark:bg-white dark:text-neutral-800">
                   Most popular
                 </span>
 
                 <div className="mt-5">
                   <span className="text-6xl font-bold text-gray-800 dark:text-neutral-200">
-                    $36
+                    $70
                   </span>
                   <span className="text-lg font-bold text-gray-800 dark:text-neutral-200">
-                    .99
+                    .00
                   </span>
                   <span className="ms-3 text-gray-500 dark:text-neutral-500">
                     USD / monthly
@@ -214,7 +207,7 @@ const Pricing = () => {
                 <div className="mt-5 grid sm:grid-cols-2 gap-y-2 py-4 first:pt-0 last:pb-0 sm:gap-x-6 sm:gap-y-0">
                   <ul className="space-y-2 text-sm sm:text-base">
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -231,12 +224,12 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Up to 10 people
+                        1 hour a week
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -253,12 +246,12 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Collect data
+                        Split sessions into 2x30min classes.
                       </span>
                     </li>
 
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -275,13 +268,13 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Code extensibility
+                        Resources for extra learning included
                       </span>
                     </li>
                   </ul>
                   <ul className="space-y-2 text-sm sm:text-base">
                     <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
+                      <span className="mt-0.5 size-6 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
                         <svg
                           className="flex-shrink-0 size-3.5"
                           xmlns="http://www.w3.org/2000/svg"
@@ -298,51 +291,7 @@ const Pricing = () => {
                         </svg>
                       </span>
                       <span className="text-gray-800 dark:text-neutral-200">
-                        Custom reports
-                      </span>
-                    </li>
-
-                    <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                        <svg
-                          className="flex-shrink-0 size-3.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </span>
-                      <span className="text-gray-800 dark:text-neutral-200">
-                        Product support
-                      </span>
-                    </li>
-
-                    <li className="flex space-x-3">
-                      <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                        <svg
-                          className="flex-shrink-0 size-3.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </span>
-                      <span className="text-gray-800 dark:text-neutral-200">
-                        Activity reporting
+                        Tailored teaching approach
                       </span>
                     </li>
                   </ul>
