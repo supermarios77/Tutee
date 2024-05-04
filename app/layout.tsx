@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/navbar";
+import Script from "next/script";
 import clsx from "clsx";
 
 export const metadata: Metadata = {
@@ -46,6 +47,18 @@ export default function RootLayout({
             </main>
           </div>
         </Providers>
+        <Script
+          src="/assets/scripts/lang-config.js"
+          strategy="beforeInteractive"
+        />
+        <Script
+          src="/assets/scripts/translation.js"
+          strategy="beforeInteractive"
+        />
+        <Script
+          src="//translate.google.com/translate_a/element.js?cb=TranslateInit"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

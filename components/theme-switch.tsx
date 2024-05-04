@@ -8,7 +8,7 @@ import { useIsSSR } from "@react-aria/ssr";
 import clsx from "clsx";
 import useSound from "use-sound";
 
-import soundFile from "/public/audio/mouse-click.mp3";
+import soundFile from "/public/assets/audio/mouse-click.mp3";
 
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 
