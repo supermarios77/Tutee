@@ -10,15 +10,19 @@ export const siteConfig = {
     },
     {
       label: "About",
-      href: "/about",
+      href: "#about",
     },
     {
       label: "Pricing",
-      href: "/pricing",
+      href: "#pricing",
     },
     {
       label: "Contact",
-      href: "/contact",
+      href: "#contact",
+    },
+    {
+      label: "Testimonials",
+      href: "#testimonials",
     },
   ],
   navMenuItems: [
@@ -28,15 +32,19 @@ export const siteConfig = {
     },
     {
       label: "About",
-      href: "/about",
+      href: "#about",
     },
     {
       label: "Pricing",
-      href: "/pricing",
+      href: "#pricing",
     },
     {
       label: "Contact",
-      href: "/contact",
+      href: "#contact",
+    },
+    {
+      label: "Testimonials",
+      href: "#testimonials",
     },
   ],
   links: {},

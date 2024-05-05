@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+    scroll-behavior: smooth;
+}
+
 .testimonials-header {
     margin-top: 50px;
     text-align: center;

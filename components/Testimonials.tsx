@@ -15,7 +15,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-0 mx-auto">
+    <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-0 mx-auto" id="testimonials">
       <h2 className="testimonials-header">
         Testimonials
       </h2>
