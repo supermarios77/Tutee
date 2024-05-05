@@ -1,6 +1,8 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { parseCookies, setCookie } from "nookies";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
+import { Button } from "@nextui-org/react";
 
 const COOKIE_NAME = "googtrans";
 
@@ -23,7 +25,7 @@ const LanguageSwitcher = () => {
   const [languageConfig, setLanguageConfig] = useState<any>();
 
   useEffect(() => {
-    const cookies = parseCookies()
+    const cookies = parseCookies();
     const existingLanguageCookieValue = cookies[COOKIE_NAME];
 
     let languageValue;
@@ -49,32 +51,28 @@ const LanguageSwitcher = () => {
   }
 
   const switchLanguage = (lang: string) => () => {
-    setCookie(null, COOKIE_NAME, "/auto/" + lang)
+    setCookie(null, COOKIE_NAME, "/auto/" + lang);
     window.location.reload();
   };
 
   return (
-    <div className="text-center notranslate">
-      {languageConfig.languages.map((ld: LanguageDescriptor, i: number) => (
-        <>
-          {currentLanguage === ld.name ||
-          (currentLanguage === "auto" &&
-            languageConfig.defaultLanguage === ld) ? (
-            <span key={`l_s_${ld}`} className="mx-3 text-orange-300">
-              {ld.title}
-            </span>
-          ) : (
-            <a
-              key={`l_s_${ld}`}
-              onClick={switchLanguage(ld.name)}
-              className="mx-3 text-blue-300 cursor-pointer hover:underline"
-            >
-              {ld.title}
-            </a>
-          )}
-        </>
-      ))}
-    </div>
+    <Dropdown>
+      <DropdownTrigger>
+        <Button variant="bordered">Language</Button>
+      </DropdownTrigger>
+
+      <DropdownMenu aria-label="Dynamic Actions">
+        {languageConfig.languages.map((ld: LanguageDescriptor, i: number) => (
+          <DropdownItem
+            className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
+            key={`l_s_${ld.name}`}
+            onClick={switchLanguage(ld.name)}
+          >
+            {ld.title}
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    </Dropdown>
   );
 };
 

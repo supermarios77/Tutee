@@ -120,52 +120,6 @@ const Pricing = () => {
                         Interesting and interactive topics
                       </span>
                     </li>
-
-                    <li className="flex space-x-3">
-                      <span className="size-6 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
-                        <svg
-                          className="flex-shrink-0 size-3.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M18 6 6 18" />
-                          <path d="m6 6 12 12" />
-                        </svg>
-                      </span>
-                      <span className="text-gray-800 dark:text-neutral-200">
-                        Tailored teaching approach
-                      </span>
-                    </li>
-
-                    <li className="flex space-x-3">
-                      <span className="size-6 flex justify-center items-center rounded-full bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:text-neutral-500">
-                        <svg
-                          className="flex-shrink-0 size-3.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M18 6 6 18" />
-                          <path d="m6 6 12 12" />
-                        </svg>
-                      </span>
-                      <span className="text-gray-800 dark:text-neutral-200">
-                        Resources for extra learning included
-                      </span>
-                    </li>
                   </ul>
                 </div>
 
