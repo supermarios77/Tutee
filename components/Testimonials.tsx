@@ -1,16 +1,16 @@
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "My tutor made English feel less daunting. Now, I navigate conversations effortlessly. Thanks for the boost!",
-      author: "Hannah, China",
+      quote: "My tutor is a great teacher. She helped me to read and learn new words and idioms with patience. Thanks for this knowledgeable session.",
+      author: "Ali, Turkiye",
     },
     {
-      quote: "My tutors engaging sessions made learning English enjoyable. Now, I'm excited to practice every day. Thanks for making it fun!",
+      quote: "My tutor always makes me feel comfortable and knows how to make good conversation! I really enjoy the classes every time!",
       author: "Kim, South Korea",
     },
     {
-      quote: "My tutors patient guidance helped me overcome language barriers. Now, I communicate fluently and feel more at ease. Thanks for the empowerment",
-      author: "Ahmed, Turkiye",
+      quote: "My tutor is super nice and friendly! During her classes, you will always have her undivided attention. She is a good listener as well as a nice person to talk to.",
+      author: "Hannah, China",
     },
   ];
 
