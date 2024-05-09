@@ -1,6 +1,7 @@
 module.exports = {
+  reactStrictMode:false,
   images: {
-    domains: ["images.unsplash.com"], // Add 'images.unsplash.com' to the list of allowed domains
+    domains: ["images.unsplash.com", 'lh3.googleusercontent.com'],
   },
   webpack: (config) => {
     config.module.rules.push({

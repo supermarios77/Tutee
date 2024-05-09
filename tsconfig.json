@@ -24,6 +24,6 @@
       "react": [ "./node_modules/@types/react" ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "public/assets/scripts/lang-config.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "public/assets/scripts/lang-config.js", "tailwind.config.ts", "components/ui/Button.jsx"],
   "exclude": ["node_modules"]
 }
