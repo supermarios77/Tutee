@@ -10,7 +10,7 @@ import useSound from "use-sound";
 
 import soundFile from "/public/assets/audio/mouse-click.mp3";
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { SunFilledIcon, MoonFilledIcon } from "@/components/icons/icons";
 
 export interface ThemeSwitchProps {
   className?: string;
