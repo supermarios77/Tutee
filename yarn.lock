@@ -1521,10 +1521,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kinde-oss/kinde-auth-nextjs@^2.2.5":
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/@kinde-oss/kinde-auth-nextjs/-/kinde-auth-nextjs-2.2.5.tgz#81c5e58a337fdd9cf9b2694ec6fd6dd339a2d476"
-  integrity sha512-PXiS5t7CLlx2S/k7fbUvJqvxXljdMLQ+yj8ZHftewT4Xm2sC47HsnNAY/ZmfjNP8WRBb6UcSn00IBD2who9V2A==
+"@kinde-oss/kinde-auth-nextjs@^2.2.6":
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/@kinde-oss/kinde-auth-nextjs/-/kinde-auth-nextjs-2.2.6.tgz#cdb7da5a358c9be6e6986941b5b37f35e3b43b16"
+  integrity sha512-F7DngwUDwc+3t1scKWEtTytewaDEfMnIz3rRwvu89ll5u/8KN9vbHWWMXX4FVgfle9Eqrx4JPblLNQtAK8dALQ==
   dependencies:
     "@babel/preset-env" "^7.23.9"
     "@kinde-oss/kinde-typescript-sdk" "2.9.0"
@@ -7504,6 +7504,7 @@ streamsearch@^1.1.0:
   integrity sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -8073,6 +8074,7 @@ word-wrap@^1.2.5:
   integrity sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

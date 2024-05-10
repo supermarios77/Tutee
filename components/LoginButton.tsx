@@ -1,18 +1,18 @@
 "use client"
 import React from "react";
-import { UserIcon } from "./icons/UserIcon";
-import { Button } from './ui/Button';
 import {
   RegisterLink,
   LoginLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
+import { Button } from "@nextui-org/react";
+import { UserIcon } from "./icons/UserIcon";
 
 const LoginButton = () => {
   return (
     <LoginLink>
-        <button>
-          Login
-        </button>
+      <Button isIconOnly color="primary" aria-label="Login">
+        <UserIcon filled={undefined} size={undefined} height={undefined} width={undefined} label={undefined} />
+      </Button> 
     </LoginLink>
   );
 };

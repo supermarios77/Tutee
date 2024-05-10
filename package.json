@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@googleapis/calendar": "^9.7.0",
-		"@kinde-oss/kinde-auth-nextjs": "^2.2.5",
+		"@kinde-oss/kinde-auth-nextjs": "^2.2.6",
 		"@nextui-org/badge": "^2.0.27",
 		"@nextui-org/button": "^2.0.31",
 		"@nextui-org/code": "^2.0.27",
