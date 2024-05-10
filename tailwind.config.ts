@@ -4,8 +4,10 @@ import {nextui} from '@nextui-org/theme';
 const config = {
   darkMode: ["class"],
   content: [
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
     './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
     './node_modules/preline/preline.js',
 	],
