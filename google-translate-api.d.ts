@@ -1,1 +1,0 @@
-declare module 'google-translate-api';
