@@ -40,8 +40,10 @@ const Contact = () => {
             <h2 className="mt-4 text-lg font-medium text-gray-800 dark:text-white">
               Email
             </h2>
-            <p className="mt-2 text-blue-500 dark:text-blue-400">
-              hello@example.com
+            <p className="mt-2 text-blue-500 dark:text-blue-400 notranslate">
+              <a href="mailto:tutee.english@gmail.com">
+              tutee.english@gmail.com
+              </a>
             </p>
           </div>
 
@@ -64,10 +66,12 @@ const Contact = () => {
             </span>
 
             <h2 className="mt-4 text-lg font-medium text-gray-800 dark:text-white">
-              Phone
+              Telegram
             </h2>
             <p className="mt-2 text-blue-500 dark:text-blue-400">
-              +1 (555) 000-0000
+              <a href="https://t.me/+qov4ViwM0Rw4ZDU0">
+                https://t.me/+qov4ViwM0Rw4ZDU0
+              </a>
             </p>
           </div>
         </div>

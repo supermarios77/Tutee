@@ -24,6 +24,10 @@ export const siteConfig = {
       label: "Testimonials",
       href: "#testimonials",
     },
+    {
+      label: "Booking",
+      href: "/booking",
+    },
   ],
   navMenuItems: [
     {
@@ -45,6 +49,10 @@ export const siteConfig = {
     {
       label: "Testimonials",
       href: "#testimonials",
+    },
+    {
+      label: "Booking",
+      href: "/booking",
     },
   ],
   links: {},

@@ -78,7 +78,7 @@ export const Navbar = () => {
                     ? "danger"
                     : "foreground"
                 }
-                href="#"
+                href="/booking"
                 size="lg"
               >
                 {item.label}
