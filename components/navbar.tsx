@@ -10,7 +10,10 @@ import {
 import { Link } from "@nextui-org/link";
 import { Button } from "@nextui-org/button";
 
-import {RegisterLink, LoginLink} from "@kinde-oss/kinde-auth-nextjs/components";
+import {
+  RegisterLink,
+  LoginLink,
+} from "@kinde-oss/kinde-auth-nextjs/components";
 import { link as linkStyles } from "@nextui-org/theme";
 
 import { siteConfig } from "@/config/site";
@@ -19,7 +22,6 @@ import clsx from "clsx";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { LanguageSwitcher } from "./lang-switcher";
-import LoginButton from "./LoginButton";
 
 export const Navbar = () => {
   return (
@@ -55,7 +57,6 @@ export const Navbar = () => {
         <NavbarItem className="hidden sm:flex gap-2">
           <ThemeSwitch />
           <LanguageSwitcher />
-          <LoginButton />
         </NavbarItem>
       </NavbarContent>
 
@@ -84,7 +85,6 @@ export const Navbar = () => {
               </Link>
             </NavbarMenuItem>
           ))}
-          <LoginButton />
         </div>
       </NavbarMenu>
     </NextUINavbar>
