@@ -41,8 +41,8 @@ const Contact = () => {
               Email
             </h2>
             <p className="mt-2 text-blue-500 dark:text-blue-400 notranslate">
-              <a href="mailto:tutee.english@gmail.com">
-              tutee.english@gmail.com
+              <a href="mailto:info@tutee.co.uk">
+                info@tutee.co.uk
               </a>
             </p>
           </div>
