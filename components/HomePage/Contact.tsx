@@ -41,9 +41,7 @@ const Contact = () => {
               Email
             </h2>
             <p className="mt-2 text-blue-500 dark:text-blue-400 notranslate">
-              <a href="mailto:info@tutee.co.uk">
-                info@tutee.co.uk
-              </a>
+              <a href="mailto:info@tutee.co.uk">info@tutee.co.uk</a>
             </p>
           </div>
 
@@ -69,9 +67,7 @@ const Contact = () => {
               Telegram
             </h2>
             <p className="mt-2 text-blue-500 dark:text-blue-400">
-              <a href="https://t.me/+qov4ViwM0Rw4ZDU0">
-                https://t.me/+qov4ViwM0Rw4ZDU0
-              </a>
+              <a href="https://t.me/+@TUTEEUK">https://t.me/+@TUTEEUK</a>
             </p>
           </div>
         </div>
