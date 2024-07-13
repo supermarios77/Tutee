@@ -22,6 +22,7 @@ import clsx from "clsx";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { LanguageSwitcher } from "./lang-switcher";
 
+
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useReducer((current) => !current, false);
 

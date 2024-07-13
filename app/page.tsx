@@ -1,7 +1,7 @@
-import Hero from "../components/HomePage/Heroo";
+import Hero from '../components/HomePage/Heroo';
 import { About } from '../components/HomePage/About';
-import Testimonials from "@/components/HomePage/Testimonials";
-import Pricing from "@/components/HomePage/Pricing";
+import Testimonials from '@/components/HomePage/Testimonials';
+import Pricing from '@/components/HomePage/Pricing';
 import Contact from '../components/HomePage/Contact';
 
 export default function Home() {
