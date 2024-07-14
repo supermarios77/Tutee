@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"postbuild": "next-sitemap"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^5.2.3",
@@ -50,6 +51,7 @@
 		"intl-messageformat": "^10.5.0",
 		"lucide-react": "^0.408.0",
 		"next": "^14.2.5",
+		"next-sitemap": "^4.2.3",
 		"next-themes": "^0.2.1",
 		"nookies": "^2.5.2",
 		"postcss": "8.4.38",
