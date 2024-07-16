@@ -10,16 +10,15 @@ import { useUser } from '@clerk/nextjs';
 import {
   StreamCall,
   StreamTheme,
-  RingingCall,
   BackgroundFiltersProvider,
 } from '@stream-io/video-react-sdk';
 import { useParams } from 'next/navigation';
 import { Loader } from 'lucide-react';
 
 import { useGetCallById } from '@/hooks/useGetCallById';
-import Alert from '@/components/Booking/Alert';
-import MeetingSetup from '@/components/Booking/MeetingSetup';
-import MeetingRoom from '@/components/Booking/MeetingRoom';
+import Alert from '@/components/Dashboard/Alert';
+import MeetingSetup from '@/components/Meeting/MeetingSetup';
+import MeetingRoom from '@/components/Meeting/MeetingRoom';
 
 const MeetingPage: React.FC = () => {
   const { id } = useParams();
@@ -53,7 +52,6 @@ const MeetingPage: React.FC = () => {
             'https://my-domain.com/bg/random-bg-2.jpg',
           ]}
         >
-          <RingingCall />
           <StreamTheme>
             {!isSetupComplete ? (
               <MeetingSetup setIsSetupComplete={setIsSetupComplete} />

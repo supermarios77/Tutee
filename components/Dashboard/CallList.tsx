@@ -4,7 +4,7 @@ import { Call, CallRecording } from '@stream-io/video-react-sdk';
 
 import Loader from '../Loader';
 import { useGetCalls } from '@/hooks/useGetCalls';
-import MeetingCard from './MeetingCard';
+import MeetingCard from '../Meeting/MeetingCard';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 

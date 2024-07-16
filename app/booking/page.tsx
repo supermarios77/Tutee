@@ -1,5 +1,5 @@
 import React from 'react';
-import InlineWidget from "@/components/Booking/InlineWidget";
+import InlineWidget from "@/components/Dashboard/InlineWidget";
 
 const Booking = () => {
   return (

@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
 
-import Navbar from '@/components/Booking/Navbar';
-import Sidebar from '@/components/Booking/Sidebar';
+import Navbar from '@/components/Dashboard/Navbar';
+import Sidebar from '@/components/Dashboard/Sidebar';
 
 import "@/styles/globals.css";
 
