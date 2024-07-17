@@ -12,16 +12,16 @@ const ShareScreenButton = () => {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       disabled={!isScreenSharing && isSomeoneScreenSharing}
       onClick={() => screenShare.toggle()}
-      className='bg-[#ffaa00] hover:bg-[#ffbc35]'
+      className="w-12 h-12 rounded-full text-foreground"
     >
       {isScreenSharing ? (
-        <MonitorIcon className="h-5 w-5 text-white" />
+        <MonitorIcon className="h-5 w-5" />
       ) : (
-        <MonitorPause className="h-5 w-5 text-white" />
+        <MonitorPause className="h-5 w-5" />
       )}
     </Button>
   );

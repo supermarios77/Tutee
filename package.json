@@ -28,6 +28,7 @@
 		"@nextui-org/system": "2.1.0",
 		"@nextui-org/theme": "^2.2.3",
 		"@radix-ui/react-popover": "^1.1.1",
+		"@radix-ui/react-tooltip": "^1.1.2",
 		"@react-aria/ssr": "^3.9.2",
 		"@react-aria/visually-hidden": "^3.8.10",
 		"@stream-io/audio-filters-web": "^0.2.1",
