@@ -91,7 +91,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
                 ? (meeting as CallRecording).url
                 : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${(meeting as Call).id}`
             }
-            buttonIcon1={type === 'recordings' ? '/assets/icons/play.svg' : undefined}
+            buttonIcon1={type === 'recordings' ? '/assets/iconsplay.svg' : undefined}
             buttonText={type === 'recordings' ? 'Play' : 'Start'}
             handleClick={
               type === 'recordings'

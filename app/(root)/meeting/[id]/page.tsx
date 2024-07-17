@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import '@stream-io/video-react-sdk/dist/css/styles.css';
-import "@/styles/globals.css";
+import '@/styles/globals.css';
 
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
@@ -11,7 +11,9 @@ import {
   StreamCall,
   StreamTheme,
   BackgroundFiltersProvider,
+  NoiseCancellationProvider,
 } from '@stream-io/video-react-sdk';
+import { NoiseCancellation } from '@stream-io/audio-filters-web';
 import { useParams } from 'next/navigation';
 import { Loader } from 'lucide-react';
 
@@ -25,6 +27,7 @@ const MeetingPage: React.FC = () => {
   const { isLoaded, user } = useUser();
   const { call, isCallLoading } = useGetCallById(id);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const noiseCancellation = useMemo(() => new NoiseCancellation(), []);
 
   if (!isLoaded || isCallLoading) return <Loader />;
 
@@ -45,21 +48,22 @@ const MeetingPage: React.FC = () => {
   return (
     <main className="h-screen w-full">
       <StreamCall call={call as any}>
-        <BackgroundFiltersProvider
-          backgroundFilter="blur" // initial filter
-          backgroundImages={[
-            'https://my-domain.com/bg/random-bg-1.jpg',
-            'https://my-domain.com/bg/random-bg-2.jpg',
-          ]}
-        >
-          <StreamTheme>
-            {!isSetupComplete ? (
-              <MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-            ) : (
-              <MeetingRoom />
-            )}
-          </StreamTheme>
-        </BackgroundFiltersProvider>
+        <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
+          <BackgroundFiltersProvider
+            backgroundImages={[
+              'https://my-domain.com/bg/random-bg-1.jpg',
+              'https://my-domain.com/bg/random-bg-2.jpg',
+            ]}
+          >
+            <StreamTheme>
+              {!isSetupComplete ? (
+                <MeetingSetup setIsSetupComplete={setIsSetupComplete} />
+              ) : (
+                <MeetingRoom />
+              )}
+            </StreamTheme>
+          </BackgroundFiltersProvider>
+        </NoiseCancellationProvider>
       </StreamCall>
     </main>
   );

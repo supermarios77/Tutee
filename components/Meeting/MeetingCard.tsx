@@ -76,7 +76,7 @@ const MeetingCard = ({
               className="bg-dark-4 px-6"
             >
               <Image
-                src="/icons/copy.svg"
+                src="/assets/icons/copy.svg"
                 alt="feature"
                 width={20}
                 height={20}

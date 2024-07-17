@@ -1,13 +1,13 @@
-'use client';
-import { useEffect, useState } from 'react';
 import {
-  DeviceSettings,
   VideoPreview,
   useCall,
   useCallStateHooks,
 } from '@stream-io/video-react-sdk';
 
 import Alert from '../Dashboard/Alert';
+import MicButton from '../Buttons/MicButton';
+import CameraButton from '../Buttons/CameraButton';
+import { BackgroundFilter } from '../Buttons/BGFilterButton';
 import { Button } from '../ui/button';
 
 const MeetingSetup = ({
@@ -15,7 +15,6 @@ const MeetingSetup = ({
 }: {
   setIsSetupComplete: (value: boolean) => void;
 }) => {
-  // https://getstream.io/video/docs/react/guides/call-and-participant-state/#call-state
   const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
   const callStartsAt = useCallStartsAt();
   const callEndedAt = useCallEndedAt();
@@ -27,22 +26,9 @@ const MeetingSetup = ({
 
   if (!call) {
     throw new Error(
-      'useStreamCall must be used within a StreamCall component.',
+      'useStreamCall must be used within a StreamCall component.'
     );
   }
-
-  // https://getstream.io/video/docs/react/ui-cookbook/replacing-call-controls/
-  const [isMicCamToggled, setIsMicCamToggled] = useState(false);
-
-  useEffect(() => {
-    if (isMicCamToggled) {
-      call.camera.disable();
-      call.microphone.disable();
-    } else {
-      call.camera.enable();
-      call.microphone.enable();
-    }
-  }, [isMicCamToggled, call.camera, call.microphone]);
 
   if (callTimeNotArrived)
     return (
@@ -55,35 +41,47 @@ const MeetingSetup = ({
     return (
       <Alert
         title="The call has been ended by the host"
-        iconUrl="/icons/call-ended.svg"
+        iconUrl="/assets/icons/call-ended.svg"
       />
     );
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-white">
-      <h1 className="text-center text-2xl font-bold">Setup</h1>
-      <VideoPreview />
-      <div className="flex h-16 items-center justify-center gap-3">
-        <label className="flex items-center justify-center gap-2 font-medium">
-          <input
-            type="checkbox"
-            checked={isMicCamToggled}
-            onChange={(e) => setIsMicCamToggled(e.target.checked)}
-          />
-          Join with mic and camera off
-        </label>
-        <DeviceSettings />
-      </div>
-      <Button
-        className="rounded-md bg-green-500 px-4 py-2.5"
-        onClick={() => {
-          call.join();
+    <div className="flex flex-col min-h-screen bg-background">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-12">
+        <div className="container mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-col items-center justify-center order-2 md:order-1">
+            <div className="w-full md:w-[800px] h-auto bg-muted rounded-xl overflow-hidden flex items-center justify-center">
+              <VideoPreview />
+            </div>
 
-          setIsSetupComplete(true);
-        }}
-      >
-        Join meeting
-      </Button>
+            <div className="mt-4 flex items-center gap-4">
+              <MicButton />
+              <CameraButton />
+              <BackgroundFilter />
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-6 order-1 md:order-2">
+            <h1 className="text-3xl font-bold tracking-tighter">
+              Join the Call
+            </h1>
+            <p className="text-muted-foreground max-w-md text-center">
+              Adjust your camera, microphone, and background before joining the
+              call.
+            </p>
+            <Button
+              size="lg"
+              className="w-full max-w-xs"
+              onClick={() => {
+                call.join();
+
+                setIsSetupComplete(true);
+              }}
+            >
+              Join Call
+            </Button>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

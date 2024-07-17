@@ -16,7 +16,7 @@ const MobileNav = () => {
       <Sheet>
         <SheetTrigger asChild>
           <Image
-            src="/icons/hamburger.svg"
+            src="/assets/icons/hamburger.svg"
             width={36}
             height={36}
             alt="hamburger icon"
@@ -26,7 +26,7 @@ const MobileNav = () => {
         <SheetContent side="left" className="border-none bg-dark-1">
           <Link href="/" className="flex items-center gap-1">
             <Image
-              src="/icons/logo.svg"
+              src="/assets/icons/logo.svg"
               width={32}
               height={32}
               alt="yoom logo"
