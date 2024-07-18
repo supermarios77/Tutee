@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import {
   TooltipProvider,
@@ -18,7 +17,7 @@ import {
   CloudyIcon,
   PhoneIcon,
 } from '../icons/icons';
-import { CameraOffIcon, MicOffIcon } from 'lucide-react';
+import { CameraOffIcon, MicOffIcon, Users } from 'lucide-react';
 import ShareScreenButton from '../Buttons/ShareScreenButton';
 
 import useSound from "use-sound";
@@ -78,6 +77,15 @@ export default function CallControls() {
 
   const handleEndCall = () => {
     call?.leave();
+  };
+
+  const handleEndCallForEveryone = async () => {
+    try {
+      await call?.endCall();
+      play();
+    } catch (error) {
+      console.error('Failed to end call for everyone:', error);
+    }
   };
 
   return (
@@ -158,11 +166,27 @@ export default function CallControls() {
                 onClick={handleEndCall}
               >
                 <PhoneIcon className="w-6 h-6" />
-                <span className="sr-only">End Call</span>
+                <span className="sr-only">Leave Call</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent className="text-foreground">
-              <p>End Call</p>
+              <p>Leave Call</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="w-12 h-12 rounded-full text-foreground bg-red-800 hover:bg-red-700"
+                onClick={handleEndCallForEveryone}
+              >
+                <Users className="w-6 h-6" />
+                <span className="sr-only">End Call for Everyone</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-foreground">
+              <p>End Call for Everyone</p>
             </TooltipContent>
           </Tooltip>
         </div>
