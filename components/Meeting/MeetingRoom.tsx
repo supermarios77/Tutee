@@ -1,5 +1,4 @@
-'use client';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CallParticipantsList,
   CallStatsButton,
@@ -7,14 +6,12 @@ import {
   PaginatedGridLayout,
   SpeakerLayout,
   useCallStateHooks,
-  useCall
+  useCall,
 } from '@stream-io/video-react-sdk';
-import { useRouter, useSearchParams } from 'next/navigation';
-
+import useSound from 'use-sound';
 import Loader from '../Loader';
 import { cn } from '@/lib/utils';
 import CallControls from './CallControls';
-
 import { InvitePanel, InvitePopup } from '../InvitePanel/InvitePanel';
 
 type CallLayoutType = 'grid' | 'speaker-left' | 'speaker-right';
@@ -24,11 +21,34 @@ const MeetingRoom = () => {
   const [layout, setLayout] = useState<CallLayoutType>('grid');
   const [showParticipants, setShowParticipants] = useState(false);
   const { useCallCallingState } = useCallStateHooks();
+  const callingState = useCallCallingState();
   const call = useCall();
   const callId = call?.id || '';
 
-  // for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
-  const callingState = useCallCallingState();
+  const [playJoinSound] = useSound('/assets/audio/join.mp3');
+  const [playLeaveSound] = useSound('/assets/audio/leave.mp3');
+
+  useEffect(() => {
+    const handleParticipantJoin = () => {
+      playJoinSound();
+    };
+
+    const handleParticipantLeave = () => {
+      playLeaveSound();
+    };
+
+    if (call) {
+      call.on('call.session_participant_joined', handleParticipantJoin);
+      call.on('call.session_participant_left', handleParticipantLeave);
+    }
+
+    return () => {
+      if (call) {
+        call.off('call.session_participant_joined', handleParticipantJoin);
+        call.off('call.session_participant_left', handleParticipantLeave);
+      }
+    };
+  }, [call, playJoinSound, playLeaveSound]);
 
   useEffect(() => {
     if (callingState === CallingState.JOINED) {
@@ -51,6 +71,14 @@ const MeetingRoom = () => {
 
   return (
     <section className="relative h-screen w-full overflow-hidden pt-4 text-white">
+      {showInvitePopup && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
+            <InvitePopup
+              callId={callId}
+              close={() => setShowInvitePopup(false)}
+            />
+          </div>
+        )}
       <div className="relative flex size-full items-center justify-center">
         <div className=" flex size-full max-w-[1000px] items-center">
           <CallLayout />
@@ -63,14 +91,6 @@ const MeetingRoom = () => {
         >
           <CallParticipantsList onClose={() => setShowParticipants(false)} />
         </div>
-        {showInvitePopup && (
-          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
-            <InvitePopup
-              callId={callId}
-              close={() => setShowInvitePopup(false)}
-            />
-          </div>
-        )}
       </div>
     </section>
   );

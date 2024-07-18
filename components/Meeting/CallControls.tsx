@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import {
   TooltipProvider,
@@ -9,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import {
   useCall,
   useCallStateHooks,
-  useNoiseCancellation,
   useBackgroundFilters,
 } from '@stream-io/video-react-sdk';
 import {
@@ -20,6 +20,9 @@ import {
 } from '../icons/icons';
 import { CameraOffIcon, MicOffIcon } from 'lucide-react';
 import ShareScreenButton from '../Buttons/ShareScreenButton';
+
+import useSound from "use-sound";
+import soundFile from "/public/assets/audio/mouse-click.mp3";
 
 export default function CallControls() {
   const call = useCall();
@@ -37,7 +40,8 @@ export default function CallControls() {
   } = useBackgroundFilters();
   const [isMicOn, setIsMicOn] = useState(!isMicMute);
   const [isCameraOn, setIsCameraOn] = useState(!isCameraMute);
-
+  const [isBGBlurred, setIsBGBlurred] = useState(false);
+  const [play] = useSound(soundFile);
 
   useEffect(() => {
     setIsMicOn(!isMicMute);
@@ -49,17 +53,26 @@ export default function CallControls() {
 
   const handleToggleMicrophone = () => {
     microphone.toggle();
+    play()
     setIsMicOn(!isMicOn);
   };
 
   const handleToggleCamera = () => {
     camera.toggle();
+    play()
     setIsCameraOn(!isCameraOn);
   };
 
   const handleToggleBackgroundBlur = () => {
     if (isBGSupported && isBGReady) {
-      applyBackgroundBlurFilter('medium');
+      if (isBGBlurred) {
+        disableBackgroundFilter();
+        play()
+      } else {
+        applyBackgroundBlurFilter('medium');
+        play()
+      }
+      setIsBGBlurred(!isBGBlurred);
     }
   };
 
