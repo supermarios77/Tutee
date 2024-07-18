@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   CallParticipantsList,
   CallStatsButton,
@@ -7,32 +7,34 @@ import {
   PaginatedGridLayout,
   SpeakerLayout,
   useCallStateHooks,
+  useCall
 } from '@stream-io/video-react-sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
 import Loader from '../Loader';
 import { cn } from '@/lib/utils';
 import CallControls from './CallControls';
 
+import { InvitePanel, InvitePopup } from '../InvitePanel/InvitePanel';
+
 type CallLayoutType = 'grid' | 'speaker-left' | 'speaker-right';
 
 const MeetingRoom = () => {
-  const searchParams = useSearchParams();
-  const isPersonalRoom = !!searchParams.get('personal');
-  const router = useRouter();
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [layout, setLayout] = useState<CallLayoutType>('grid');
   const [showParticipants, setShowParticipants] = useState(false);
   const { useCallCallingState } = useCallStateHooks();
+  const call = useCall();
+  const callId = call?.id || '';
 
   // for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
   const callingState = useCallCallingState();
+
+  useEffect(() => {
+    if (callingState === CallingState.JOINED) {
+      setShowInvitePopup(true);
+    }
+  }, [callingState]);
 
   if (callingState !== CallingState.JOINED) return <Loader />;
 
@@ -61,6 +63,14 @@ const MeetingRoom = () => {
         >
           <CallParticipantsList onClose={() => setShowParticipants(false)} />
         </div>
+        {showInvitePopup && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
+            <InvitePopup
+              callId={callId}
+              close={() => setShowInvitePopup(false)}
+            />
+          </div>
+        )}
       </div>
     </section>
   );
