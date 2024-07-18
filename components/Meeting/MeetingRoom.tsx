@@ -6,7 +6,7 @@ import {
   PaginatedGridLayout,
   SpeakerLayout,
   useCallStateHooks,
-  useCall,
+  useCall
 } from '@stream-io/video-react-sdk';
 import useSound from 'use-sound';
 import Loader from '../Loader';
@@ -18,7 +18,7 @@ type CallLayoutType = 'grid' | 'speaker-left' | 'speaker-right';
 
 const MeetingRoom = () => {
   const [showInvitePopup, setShowInvitePopup] = useState(false);
-  const [layout, setLayout] = useState<CallLayoutType>('grid');
+  const [layout, setLayout] = useState<CallLayoutType>('speaker-left');
   const [showParticipants, setShowParticipants] = useState(false);
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
