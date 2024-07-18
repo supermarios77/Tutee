@@ -1,13 +1,6 @@
-import MeetingTypeList from '@/components/Meeting/MeetingTypeList';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import StudentMeetingTypeList from '@/components/Meeting/StudentMeetingTypeList';;
 
 const Home = async () => {
-  const { sessionClaims } = auth();
-
-  if (sessionClaims?.metadata.role !== 'admin') {
-    redirect('/');
-  }
 
   const now = new Date();
 
@@ -30,7 +23,7 @@ const Home = async () => {
         </div>
       </div>
 
-      <MeetingTypeList />
+      <StudentMeetingTypeList />
     </section>
   );
 };

@@ -1,14 +1,20 @@
 import { MonitorIcon, MonitorPause } from 'lucide-react';
 import React from 'react';
 import { Button } from '../ui/button';
-import { useCallStateHooks } from '@stream-io/video-react-sdk';
+import { useCall, useCallStateHooks } from '@stream-io/video-react-sdk';
 
 const ShareScreenButton = () => {
   const { useScreenShareState, useHasOngoingScreenShare } = useCallStateHooks();
   const { screenShare, isMute: isScreenSharing } = useScreenShareState();
+  const call = useCall()
 
   // determine, whether somebody else is sharing their screen
   const isSomeoneScreenSharing = useHasOngoingScreenShare();
+
+  call?.screenShare.setSettings({
+    maxFramerate: 15, // will be clamped between 1 and 15 fps
+    maxBitrate: 1500000, // will use at most 1.5Mbps
+  });
 
   return (
     <Button

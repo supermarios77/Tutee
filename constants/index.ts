@@ -20,11 +20,6 @@ export const sidebarLinks = [
     route: '/dashboard/recordings',
     label: 'Recordings',
   },
-  {
-    imgURL: '/assets/icons/add-personal.svg',
-    route: '/dashboard/personal-room',
-    label: 'Personal Room',
-  },
 ];
 
 export const avatarImages = [
