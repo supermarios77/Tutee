@@ -1,5 +1,4 @@
 import '@/styles/globals.css';
-
 import { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
@@ -11,7 +10,6 @@ import { Navbar } from '@/components/navbar';
 import PrelineScript from '@/components/PrelineScript';
 
 import clsx from 'clsx';
-
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +29,6 @@ export const viewport: Viewport = {
   ],
 };
 
-
 export default function RootLayout({
   children,
 }: {
@@ -46,6 +43,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        {/* @ts-ignore */}
         <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -59,10 +57,6 @@ export default function RootLayout({
         <Script
           src="/assets/scripts/translation.js"
           strategy="beforeInteractive"
-        />
-        <Script
-          src="//translate.google.com/translate_a/element.js?cb=TranslateInit"
-          strategy="afterInteractive"
         />
         <PrelineScript />
       </body>
