@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   TooltipProvider,
   Tooltip,
@@ -11,24 +11,15 @@ import {
   useCallStateHooks,
   useBackgroundFilters,
 } from '@stream-io/video-react-sdk';
-import {
-  MicIcon,
-  VideoIcon,
-  CloudyIcon,
-  PhoneIcon,
-} from '../icons/icons';
+import { MicIcon, VideoIcon, CloudyIcon, PhoneIcon } from '../icons/icons';
 import { CameraOffIcon, MicOffIcon, Users } from 'lucide-react';
 import ShareScreenButton from '../Buttons/ShareScreenButton';
-
-import useSound from "use-sound";
-import soundFile from "/public/assets/audio/mouse-click.mp3";
+import useSound from 'use-sound';
+import soundFile from '/public/assets/audio/mouse-click.mp3';
 
 export default function CallControls() {
   const call = useCall();
-  const {
-    useCameraState,
-    useMicrophoneState,
-  } = useCallStateHooks();
+  const { useCameraState, useMicrophoneState } = useCallStateHooks();
   const { camera, isMute: isCameraMute } = useCameraState();
   const { microphone, isMute: isMicMute } = useMicrophoneState();
   const {
@@ -42,6 +33,9 @@ export default function CallControls() {
   const [isBGBlurred, setIsBGBlurred] = useState(false);
   const [play] = useSound(soundFile);
 
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     setIsMicOn(!isMicMute);
   }, [isMicMute]);
@@ -52,13 +46,13 @@ export default function CallControls() {
 
   const handleToggleMicrophone = () => {
     microphone.toggle();
-    play()
+    play();
     setIsMicOn(!isMicOn);
   };
 
   const handleToggleCamera = () => {
     camera.toggle();
-    play()
+    play();
     setIsCameraOn(!isCameraOn);
   };
 
@@ -66,10 +60,10 @@ export default function CallControls() {
     if (isBGSupported && isBGReady) {
       if (isBGBlurred) {
         disableBackgroundFilter();
-        play()
+        play();
       } else {
         applyBackgroundBlurFilter('medium');
-        play()
+        play();
       }
       setIsBGBlurred(!isBGBlurred);
     }
@@ -91,7 +85,7 @@ export default function CallControls() {
   return (
     <TooltipProvider>
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-md px-4">
-        <div className="bg-background/80 backdrop-blur-sm backdrop-filter backdrop-blur-lg rounded-3xl py-3 px-6 flex items-center justify-between shadow-xl">
+        <div className="bg-background/80 backdrop-blur-lg backdrop-filter rounded-3xl py-3 px-6 flex items-center justify-between shadow-xl">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -166,11 +160,11 @@ export default function CallControls() {
                 onClick={handleEndCall}
               >
                 <PhoneIcon className="w-6 h-6" />
-                <span className="sr-only">Leave Call</span>
+                <span className="sr-only">End Call</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent className="text-foreground">
-              <p>Leave Call</p>
+              <p>End Call</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
