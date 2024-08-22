@@ -1,3 +1,9 @@
+'use client'
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { QuoteIcon } from 'lucide-react';
+
 export default function Testimonials() {
   const testimonials = [
     {
@@ -15,39 +21,42 @@ export default function Testimonials() {
   ];
 
   return (
-    <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-0 mx-auto" id="testimonials">
-      <h2 className="testimonials-header">
-        Testimonials
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {testimonials.map((testimonial, index) => (
-          <div
-            key={index}
-            className="flex flex-col bg-white border border-gray-200 shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700"
-          >
-            <div className="flex-auto p-4 md:p-6">
-              <svg
-                className="w-20 h-auto sm:w-24 text-gray-700 dark:text-neutral-300"
-                width="140"
-                height="47"
-                viewBox="0 0 140 47"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              ></svg>
-
-              <p className=" text-gray-800 md:text-xl dark:text-white">
-                <em>&quot;{testimonial.quote}&quot;</em>
-              </p>
-            </div>
-
-            <div className="p-4 rounded-b-xl md:px-6">
-              <h3 className="text-sm font-semibold text-gray-800 sm:text-base dark:text-neutral-200">
-                {testimonial.author}
-              </h3>
-            </div>
-          </div>
-        ))}
+    <section className="relative overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 dark:from-blue-900 dark:to-neutral-900" id="testimonials">
+      <div className="max-w-[85rem] px-4 py-16 sm:px-6 lg:px-8 mx-auto">
+        <motion.h2 
+          className="text-3xl font-bold text-center text-white mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          What Our Students Say
+        </motion.h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <motion.div
+              key={index}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <div className="p-6">
+                <QuoteIcon className="w-10 h-10 text-blue-500 mb-4" />
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
+                  &quot;{testimonial.quote}&quot;
+                </p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {testimonial.author}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full transform rotate-45"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400 to-indigo-600 rounded-full transform rotate-45"></div>
+      </div>
+    </section>
   );
 }

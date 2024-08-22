@@ -1,71 +1,123 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import {
+  StreamCall,
+  StreamVideo,
+  StreamVideoClient,
+  Call,
+  StreamTheme,
+  BackgroundFiltersProvider,
+} from '@stream-io/video-react-sdk';
+import { Loader } from 'lucide-react';
+
+import Alert from '@/components/Dashboard/Alert';
+import MeetingRoom from '@/components/Meeting/MeetingRoom';
 
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import '@/styles/globals.css';
 
-import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import {
-  StreamCall,
-  StreamTheme,
-  BackgroundFiltersProvider,
-  NoiseCancellationProvider,
-} from '@stream-io/video-react-sdk';
-import { NoiseCancellation } from '@stream-io/audio-filters-web';
-import { useParams } from 'next/navigation';
-import { Loader } from 'lucide-react';
-
-import { useGetCallById } from '@/hooks/useGetCallById';
-import Alert from '@/components/Dashboard/Alert';
-import MeetingSetup from '@/components/Meeting/MeetingSetup';
-import MeetingRoom from '@/components/Meeting/MeetingRoom';
-
 const MeetingPage: React.FC = () => {
   const { id } = useParams();
   const { isLoaded, user } = useUser();
-  const { call, isCallLoading } = useGetCallById(id);
-  const [isSetupComplete, setIsSetupComplete] = useState(false);
-  const noiseCancellation = useMemo(() => new NoiseCancellation(), []);
+  const [client, setClient] = useState<StreamVideoClient | null>(null);
+  const [call, setCall] = useState<Call | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!isLoaded || isCallLoading) return <Loader />;
+  const initializeClient = useCallback(async () => {
+    if (!user) return;
 
-  if (!call)
-    return (
-      <p className="text-center text-3xl font-bold text-white">
-        Call Not Found
-      </p>
-    );
+    const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+    if (!apiKey) {
+      setError('Stream API key is not defined');
+      return;
+    }
 
-  const notAllowed =
-    call.type === 'invited' &&
-    (!user || !call.state.members.find((m) => m.user.id === user.id));
+    try {
+      const response = await fetch('/api/stream/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, userName: user.fullName || user.username || user.id }),
+      });
 
-  if (notAllowed)
-    return <Alert title="You are not allowed to join this meeting" />;
+      if (!response.ok) {
+        throw new Error('Failed to get Stream token');
+      }
+
+      const { token } = await response.json();
+
+      const clientInstance = new StreamVideoClient({
+        apiKey,
+        user: {
+          id: user.id,
+          name: user.fullName || user.username || user.id,
+        },
+        token,
+      });
+
+      setClient(clientInstance);
+    } catch (error) {
+      console.error('Error initializing Stream client:', error);
+      setError('Failed to initialize video call');
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      initializeClient();
+    }
+  }, [isLoaded, user, initializeClient]);
+
+  useEffect(() => {
+    if (!client || !id) return;
+
+    const callInstance = client.call('default', id as string);
+    setCall(callInstance);
+
+    const joinCall = async () => {
+      try {
+        await callInstance.join({ create: true });
+        console.log('Call joined successfully');
+      } catch (error) {
+        console.error('Error joining call:', error);
+        if (error instanceof Error && !error.message.includes('Already joined')) {
+          setError('Failed to join call. Please try again.');
+        }
+      }
+    };
+
+    joinCall();
+
+    return () => {
+      if (callInstance.state.callingState === 'joined') {
+        callInstance.leave().catch(console.error);
+      }
+    };
+  }, [client, id]);
+
+  if (!isLoaded || !client || !call) return <Loader />;
+
+  if (error) {
+    return <Alert title={error} />;
+  }
 
   return (
-    <main className="h-screen w-full">
-      <StreamCall call={call as any}>
-        <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
-          <BackgroundFiltersProvider
-            backgroundImages={[
-              'https://my-domain.com/bg/random-bg-1.jpg',
-              'https://my-domain.com/bg/random-bg-2.jpg',
-            ]}
-          >
-            <StreamTheme>
-              {!isSetupComplete ? (
-                <MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-              ) : (
-                <MeetingRoom />
-              )}
-            </StreamTheme>
-          </BackgroundFiltersProvider>
-        </NoiseCancellationProvider>
+    <StreamVideo client={client}>
+      <StreamCall call={call}>
+        <BackgroundFiltersProvider
+          backgroundImages={[
+            'https://tutee.co.uk/bg/random-bg-1.jpg',
+            'https://tutee.co.uk/bg/random-bg-2.jpg',
+          ]}
+        >
+          <StreamTheme>
+            <MeetingRoom />
+          </StreamTheme>
+        </BackgroundFiltersProvider>
       </StreamCall>
-    </main>
+    </StreamVideo>
   );
 };
 
