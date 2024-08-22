@@ -87,6 +87,7 @@
 	},
 	"devDependencies": {
 		"@types/google-translate-api": "^2.3.5",
-		"@types/jsonwebtoken": "^9.0.6"
+		"@types/jsonwebtoken": "^9.0.6",
+		"ts-node": "^10.9.2"
 	}
 }

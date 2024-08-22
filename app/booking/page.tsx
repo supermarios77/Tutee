@@ -1,10 +1,10 @@
-"use client"
+'use client'
+
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 import LessonBooking from '@/components/Bookings/LessonBooking'
 
 export default function BookingPage() {
