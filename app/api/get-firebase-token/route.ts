@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { auth } from 'firebase-admin';
-import { initializeApp, getApps } from 'firebase-admin/app';
-import { cert } from 'firebase-admin/app';
+import { auth } from '@clerk/nextjs/server';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 if (!getApps().length) {
   initializeApp({
@@ -13,14 +13,17 @@ if (!getApps().length) {
   });
 }
 
-export async function POST(request: Request) {
-  const { userId } = await request.json();
+export async function POST() {
+  const { userId } = auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
-    const firebaseToken = await auth().createCustomToken(userId);
-    return NextResponse.json({ firebaseToken });
+    const token = await getAuth().createCustomToken(userId);
+    return NextResponse.json({ token });
   } catch (error) {
     console.error('Error creating custom token:', error);
-    return NextResponse.json({ error: 'Failed to create Firebase token' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
