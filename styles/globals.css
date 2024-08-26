@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -25,11 +24,6 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -52,88 +46,8 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
-
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-.testimonials-header {
-  margin-top: 50px;
-  text-align: center;
-  font-size: 35px;
-  margin-bottom: 20px;
-  font-weight: bold;
-}
-
-.new-section {
-  margin-top: 40px;
-  margin-bottom: 40px;
-}
-
-.skiptranslate {
-  display: none !important;
-}
-
-/* ======== stream css overrides ======== */
-.str-video__call-stats {
-  max-width: 500px;
-  position: relative;
-}
-
-.str-video__speaker-layout__wrapper {
-  max-height: 700px;
-}
-
-.str-video__participant-details {
-  color: white;
-}
-
-.str-video__menu-container {
-  color: white;
-}
-
-.str-video__notification {
-  color: white;
-}
-
-.str-video__participant-list {
-  background-color: #1c1f2e;
-  padding: 10px;
-  border-radius: 10px;
-  color: white;
-  height: 100%;
-}
-
-.str-video__call-controls__button {
-  height: 40px;
-}
-
-.glassmorphism {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-.glassmorphism2 {
-  background: rgba(18, 17, 17, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* =============================== */
 
 @layer utilities {
   .flex-center {
@@ -145,23 +59,69 @@ html {
   }
 }
 
-/* animation */
-
-.show-block {
-  width: 100%;
-  max-width: 350px;
-  display: block;
-  animation: show 0.7s forwards linear;
+/* Main section styles */
+.main-section {
+  @apply relative overflow-hidden bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-950 dark:to-black min-h-screen flex items-center;
 }
 
-@keyframes show {
-  0% {
-    animation-timing-function: ease-in;
-    width: 0%;
-  }
+.content-container {
+  @apply max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10;
+}
 
-  100% {
-    animation-timing-function: ease-in;
-    width: 100%;
+.centered-content {
+  @apply max-w-3xl text-center mx-auto;
+}
+
+.primary-heading {
+  @apply block text-5xl font-bold text-white sm:text-6xl md:text-7xl mb-8;
+}
+
+.primary-description {
+  @apply text-xl md:text-2xl text-blue-100 mb-10;
+}
+
+.primary-button {
+  @apply text-xl px-10 py-6 bg-white text-blue-900 hover:bg-blue-100 transition-colors duration-300;
+}
+
+.visual-elements-container {
+  @apply relative h-80 sm:h-96 md:h-[30rem] mt-10 mb-20;
+}
+
+.floating-element {
+  @apply absolute text-blue-400 dark:text-blue-300 filter drop-shadow-lg;
+}
+
+.features-grid {
+  @apply mt-20 grid grid-cols-1 sm:grid-cols-3 gap-12;
+}
+
+.feature-item {
+  @apply flex flex-col items-center text-center;
+}
+
+.feature-icon {
+  @apply w-16 h-16 text-blue-300 mb-6;
+}
+
+.feature-title {
+  @apply text-2xl font-semibold mb-3 text-white;
+}
+
+.feature-description {
+  @apply text-lg text-blue-100;
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
   }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
 }

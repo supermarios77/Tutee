@@ -18,10 +18,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "react": ["./node_modules/@types/react"]
+      "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next-sitemap.config.js", "components/Buttons/BGFilterButton.jsx", "actions/stream.actions.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next-sitemap.config.js"],
   "exclude": ["node_modules"]
 }
