@@ -44,7 +44,9 @@ export interface Booking {
   endTime: string;
   lessonType: 'individual' | 'group' | 'instant';
   status: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
+  subscriptionPlanId: string;
+  isFreeTrial: boolean;
+  notes: string;
 }
 
 export interface User {
@@ -61,4 +63,5 @@ export interface User {
 
 export interface UserBookingInfo {
   hasClaimedFreeTrial: boolean;
+  bookings: Booking[];
 }

@@ -1,15 +1,8 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Teacher, SubscriptionPlan, Booking, User } from '@/types/booking';
+import { adminDb } from '@/lib/firebase-admin';
 
-// Initialize Firebase Admin SDK
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(require('../tutee-uk-firebase-adminsdk-salk4-a7df43c6ad.json'))
-  });
-}
-
-const db = getFirestore();
+const db = adminDb;
 
 const teachers: Teacher[] = [
   {
@@ -111,34 +104,40 @@ const bookings: Booking[] = [
     id: 'booking1',
     teacherId: 'teacher1',
     studentId: 'user1',
+    subscriptionPlanId: 'one-to-one-sessions',
     date: '2024-03-01',
     startTime: '10:00',
     endTime: '11:00',
     lessonType: 'individual',
     status: 'scheduled',
     notes: 'Focus on business English',
+    isFreeTrial: false,
   },
   {
     id: 'booking2',
     teacherId: 'teacher2',
     studentId: 'user2',
+    subscriptionPlanId: 'group-sessions',
     date: '2024-03-02',
     startTime: '14:00',
     endTime: '15:00',
     lessonType: 'group',
     status: 'scheduled',
     notes: 'Conversation practice',
+    isFreeTrial: false,
   },
   {
     id: 'booking3',
     teacherId: 'teacher1',
     studentId: 'user1',
+    subscriptionPlanId: 'one-to-one-sessions',
     date: new Date().toISOString().split('T')[0],
     startTime: new Date().toTimeString().split(' ')[0].slice(0, 5),
     endTime: new Date(Date.now() + 30*60000).toTimeString().split(' ')[0].slice(0, 5),
     lessonType: 'instant',
     status: 'scheduled',
     notes: 'Instant booking for immediate language help',
+    isFreeTrial: false,
   },
 ];
 

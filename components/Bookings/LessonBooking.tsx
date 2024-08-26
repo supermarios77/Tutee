@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Clock, CalendarIcon, CheckCircle, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react'
+import { User, Clock, Calendar, CheckCircle, ChevronLeft, ChevronRight, CreditCard, DollarSign, Lock } from 'lucide-react'
 import { format, addDays, startOfWeek, addWeeks, isSameDay, parseISO, isFuture, addMinutes } from 'date-fns'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -15,11 +15,12 @@ import { subscriptionPlans, bookingSteps } from '@/constants/booking'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useRouter } from 'next/navigation'
 
-// Load Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSuccess: () => void }) => {
+const PaymentForm = ({ clientSecret, onSuccess, amount, currency }: { clientSecret: string, onSuccess: () => void, amount: number, currency: string }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -50,26 +51,26 @@ const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSucc
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center justify-center">
-          <CreditCard className="mr-2" />
+        <CardTitle className="flex items-center justify-center text-3xl">
+          <CreditCard className="mr-2 h-8 w-8" />
           Secure Payment
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent>
-          <div className="mb-4">
-            <label htmlFor="card-element" className="block text-sm font-medium mb-2">
+          <div className="mb-6">
+            <label htmlFor="card-element" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Card Details
             </label>
-            <div className="border rounded-md p-3 bg-white dark:bg-gray-800">
+            <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
               <CardElement
                 id="card-element"
                 options={{
                   style: {
                     base: {
-                      fontSize: '16px',
+                      fontSize: '18px',
                       color: '#424770',
                       '::placeholder': {
                         color: '#aab7c4',
@@ -84,24 +85,28 @@ const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSucc
             </div>
           </div>
           {error && (
-            <div className="text-red-500 bg-red-100 dark:bg-red-900 p-3 rounded-md mt-2 text-sm" role="alert">
-              <p>{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
         </CardContent>
         <CardFooter>
           <Button 
             type="submit" 
             disabled={!stripe || processing} 
-            className="w-full flex items-center justify-center"
+            className="w-full flex items-center justify-center text-lg py-6"
           >
             {processing ? (
               <>
                 <span className="mr-2">Processing</span>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
               </>
             ) : (
-              'Pay Securely'
+              <>
+                <Lock className="mr-2 h-6 w-6" />
+                Pay {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount / 100)}
+              </>
             )}
           </Button>
         </CardFooter>
@@ -127,6 +132,7 @@ export default function LessonBooking() {
 
   const { user } = useUser();
   const { userBookingInfo, isLoading: isUserInfoLoading } = useUserBookingInfo();
+  const router = useRouter();
 
   useEffect(() => {
     fetchTeachers()
@@ -160,19 +166,19 @@ export default function LessonBooking() {
     try {
       const teacherDocRef = doc(db, 'teachers', teacherId)
       const teacherDocSnapshot = await getDoc(teacherDocRef)
-      
+
       if (!teacherDocSnapshot.exists()) {
         throw new Error('Teacher not found')
       }
-      
+
       const teacherData = teacherDocSnapshot.data() as Teacher
-      
+
       let allSlots: TimeSlot[] = []
 
       for (const date of dates) {
         const dayOfWeek = format(date, 'EEEE').toLowerCase()
         const teacherAvailability = teacherData.availability[dayOfWeek]
-        
+
         if (teacherAvailability) {
           const startTime = parseISO(`${format(date, 'yyyy-MM-dd')}T${teacherAvailability.start}`)
           const endTime = parseISO(`${format(date, 'yyyy-MM-dd')}T${teacherAvailability.end}`)
@@ -197,7 +203,20 @@ export default function LessonBooking() {
     }
   }
 
+  const hasActiveBooking = () => {
+    if (!userBookingInfo) return false;
+    const now = new Date();
+    return userBookingInfo.bookings.some(booking => 
+      new Date(booking.date + 'T' + booking.endTime) > now && booking.status !== 'cancelled'
+    );
+  };
+
   const handleBookLesson = async () => {
+    if (hasActiveBooking()) {
+      setError("You already have an active booking. Please attend or cancel your current lesson before booking a new one.");
+      return;
+    }
+
     if (!selectedSlots.length || !selectedTeacher || !selectedDates.length || !selectedPlan || !user) return
 
     setIsLoading(true)
@@ -334,6 +353,30 @@ export default function LessonBooking() {
     )
   }
 
+  if (isUserInfoLoading) {
+    return <div>Loading user information...</div>;
+  }
+
+  if (hasActiveBooking()) {
+    return (
+      <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-blue-100 via-white to-purple-100 dark:from-blue-900 dark:via-gray-900 dark:to-purple-900 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Active Booking</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>You already have an active booking. Please attend or cancel your current lesson before booking a new one.</p>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => router.push('/student-dashboard')}>
+              Go to Dashboard
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-blue-100 via-white to-purple-100 dark:from-blue-900 dark:via-gray-900 dark:to-purple-900 p-4">
       <motion.div 
@@ -344,17 +387,19 @@ export default function LessonBooking() {
       >
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/3 bg-blue-600 p-8 text-white">
-            <h1 className="text-4xl font-bold mb-4">Book Your Lessons</h1>
-            <p className="mb-8">Follow these steps to schedule your perfect learning sessions.</p>
-            <div className="space-y-4">
+            <h1 className="text-4xl font-bold mb-6">Book Your Lessons</h1>
+            <p className="text-lg mb-8">Follow these steps to schedule your perfect learning sessions.</p>
+            <div className="space-y-6">
               {bookingSteps.map((step, index) => (
                 <div key={index} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${
                     index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
                   }`}>
-                    {index < currentStep ? <CheckCircle size={20} /> : <step.icon size={20} />}
+                    {index < currentStep ? <CheckCircle size={28} /> : <step.icon size={28} />}
                   </div>
-                  <span className={index <= currentStep ? 'font-semibold' : 'text-blue-200'}>{step.title}</span>
+                  <span className={`text-xl ${index <= currentStep ? 'font-semibold' : 'text-blue-200'}`}>
+                    {step.title}
+                  </span>
                 </div>
               ))}
             </div>
@@ -471,25 +516,66 @@ export default function LessonBooking() {
                     ))}
                   </>
                 )}
-                {currentStep === 4 && paymentIntentClientSecret && (
-                  <>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Payment</h2>
-                    <p className="mb-4">
-                      Total amount: ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? 
-                        (selectedPlan!.price * 0.75).toFixed(2) : 
-                        selectedPlan!.price.toFixed(2)
-                      } 
-                      {isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && (
-                        <Badge variant="secondary" className="ml-2">25% off for new users</Badge>
+                {currentStep === 4 && (
+                  <Card className="w-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900">
+                    <CardHeader>
+                      <CardTitle className="text-3xl font-bold flex items-center justify-center">
+                        <DollarSign className="mr-2 h-8 w-8" />
+                        Payment Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
+                        <span className="text-2xl mb-2">Total amount:</span>
+                        <span className="text-5xl font-bold mb-4">
+                          ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? 
+                            (selectedPlan!.price * 0.75).toFixed(2) : 
+                            selectedPlan!.price.toFixed(2)
+                          }
+                        </span>
+                        {isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && (
+                          <Badge variant="secondary" className="text-lg py-1 px-3">
+                            25% off for new users
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md">
+                        <h3 className="text-xl font-semibold mb-2 flex items-center">
+                          <Calendar className="mr-2 h-6 w-6" />
+                          Booking Details
+                        </h3>
+                        <ul className="space-y-2">
+                          <li><span className="font-semibold">Plan:</span> {selectedPlan?.name}</li>
+                          <li><span className="font-semibold">Teacher:</span> {teachers.find(t => t.id === selectedTeacher)?.name}</li>
+                          <li><span className="font-semibold">Sessions:</span> {selectedSlots.length}</li>
+                        </ul>
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md">
+                        This amount will be charged to your card once you proceed to payment.
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      {paymentIntentClientSecret ? (
+                        <Elements stripe={stripePromise}>
+                          <PaymentForm 
+                            clientSecret={paymentIntentClientSecret} 
+                            onSuccess={handlePaymentSuccess}
+                            amount={Math.round((isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? selectedPlan!.price * 0.75 : selectedPlan!.price) * 100)}
+                            currency={selectedPlan!.currency}
+                          />
+                        </Elements>
+                      ) : (
+                        <Button 
+                          onClick={handleBookLesson} 
+                          disabled={selectedSlots.length < (selectedPlan?.sessionsPerWeek || 0)}
+                          className="w-full text-lg py-6 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          <CreditCard className="mr-2 h-6 w-6" />
+                          Proceed to Payment
+                        </Button>
                       )}
-                    </p>
-                    <Elements stripe={stripePromise}>
-                      <PaymentForm 
-                        clientSecret={paymentIntentClientSecret} 
-                        onSuccess={handlePaymentSuccess}
-                      />
-                    </Elements>
-                  </>
+                    </CardFooter>
+                  </Card>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -497,7 +583,7 @@ export default function LessonBooking() {
               <Button onClick={prevStep} disabled={currentStep === 0} variant="outline">
                 Previous
               </Button>
-              {currentStep < bookingSteps.length - 1 ? (
+              {currentStep < bookingSteps.length - 1 && (
                 <Button onClick={nextStep} disabled={
                   (currentStep === 0 && !selectedPlan) ||
                   (currentStep === 1 && !selectedTeacher) ||
@@ -506,11 +592,7 @@ export default function LessonBooking() {
                 }>
                   Next
                 </Button>
-              ) : currentStep === bookingSteps.length - 1 && !paymentIntentClientSecret ? (
-                <Button onClick={handleBookLesson} disabled={selectedSlots.length < (selectedPlan?.sessionsPerWeek || 0)}>
-                  Proceed to Payment
-                </Button>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
