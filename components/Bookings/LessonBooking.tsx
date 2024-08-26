@@ -1,17 +1,41 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Clock, CalendarIcon, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
-import { format, addDays, startOfWeek, addWeeks, isSameDay, parseISO, isValid, isFuture } from 'date-fns'
+import { User, Clock, CalendarIcon, CheckCircle, ChevronLeft, ChevronRight, Zap, Users } from 'lucide-react'
+import { format, addDays, startOfWeek, addWeeks, isSameDay, parseISO, isValid, isFuture, startOfDay, addMinutes } from 'date-fns'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+
+// Load Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 interface Teacher {
   id: string;
   name: string;
+  email: string;
+  bio: string;
+  hourlyRate: number;
+  availability: {
+    [key: string]: { start: string; end: string };
+  };
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  interval: string;
+  description: string;
+  features: string[];
+  sessionType: 'group' | 'individual';
+  sessionsPerWeek: number;
+  minutesPerSession: number;
 }
 
 interface TimeSlot {
@@ -19,32 +43,116 @@ interface TimeSlot {
   end: Date;
 }
 
+const subscriptionPlans: SubscriptionPlan[] = [
+  {
+    id: 'group-sessions',
+    name: 'Group Sessions',
+    price: 59.99,
+    currency: 'USD',
+    interval: 'month',
+    description: 'Up to 4 people, 2x30 minute sessions per week',
+    features: [
+      'Up to 4 people',
+      '2x30 minute sessions',
+      'Includes resources',
+      'Interesting and interactive topics'
+    ],
+    sessionType: 'group',
+    sessionsPerWeek: 2,
+    minutesPerSession: 30
+  },
+  {
+    id: 'one-to-one-sessions',
+    name: 'One To One Sessions',
+    price: 70.00,
+    currency: 'USD',
+    interval: 'month',
+    description: '1 hour a week of personalized tutoring',
+    features: [
+      '1 hour a week',
+      'Split sessions into 2x30min classes',
+      'Resources for extra learning included',
+      'Tailored teaching approach'
+    ],
+    sessionType: 'individual',
+    sessionsPerWeek: 1,
+    minutesPerSession: 60
+  }
+];
+
 const steps = [
+  { title: 'Select Plan', icon: Users },
   { title: 'Select Teacher', icon: User },
-  { title: 'Choose Date', icon: CalendarIcon },
-  { title: 'Select Time', icon: Clock },
+  { title: 'Choose Dates', icon: CalendarIcon },
+  { title: 'Select Times', icon: Clock },
+  { title: 'Payment', icon: Clock },
 ]
+
+const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSuccess: () => void }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setProcessing(true);
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement)!,
+      }
+    });
+
+    if (result.error) {
+      setError(result.error.message || 'An error occurred');
+    } else {
+      onSuccess();
+    }
+
+    setProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <CardElement />
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+      <Button type="submit" disabled={!stripe || processing} className="mt-4">
+        Pay
+      </Button>
+    </form>
+  );
+};
 
 export default function LessonBooking() {
   const [currentStep, setCurrentStep] = useState(0)
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | undefined>(undefined)
   const [selectedTeacher, setSelectedTeacher] = useState<string | undefined>(undefined)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null)
+  const [selectedDates, setSelectedDates] = useState<Date[]>([])
+  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([])
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()))
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string | null>(null)
+  const [bookingId, setBookingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTeachers()
   }, [])
 
   useEffect(() => {
-    if (selectedTeacher && selectedDate) {
-      fetchAvailableSlots(selectedTeacher, selectedDate)
+    if (selectedTeacher && selectedDates.length > 0) {
+      fetchAvailableSlots(selectedTeacher, selectedDates)
     }
-  }, [selectedTeacher, selectedDate])
+  }, [selectedTeacher, selectedDates])
 
   const fetchTeachers = async () => {
     setIsLoading(true)
@@ -52,7 +160,7 @@ export default function LessonBooking() {
     try {
       const teachersRef = collection(db, 'teachers')
       const teachersSnapshot = await getDocs(teachersRef)
-      const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name as string }))
+      const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher))
       setTeachers(teachersData)
     } catch (error) {
       console.error('Error fetching teachers:', error)
@@ -62,29 +170,41 @@ export default function LessonBooking() {
     }
   }
 
-  const fetchAvailableSlots = async (teacherId: string, date: Date) => {
+  const fetchAvailableSlots = async (teacherId: string, dates: Date[]) => {
     setIsLoading(true)
     setError(null)
     try {
-      const teacherDoc = await getDocs(query(collection(db, 'teachers'), where('id', '==', teacherId)))
-      if (teacherDoc.empty) {
+      const teacherDocRef = doc(db, 'teachers', teacherId)
+      const teacherDocSnapshot = await getDoc(teacherDocRef)
+      
+      if (!teacherDocSnapshot.exists()) {
         throw new Error('Teacher not found')
       }
-      const teacherData = teacherDoc.docs[0].data()
-      const slots = teacherData.availableSlots || []
-      const formattedDate = format(date, 'yyyy-MM-dd')
-      const filteredSlots = slots
-        .filter((slot: { start: string; end: string }) => 
-          slot.start.startsWith(formattedDate) && 
-          isValid(parseISO(slot.start)) && 
-          isValid(parseISO(slot.end)) &&
-          isFuture(parseISO(slot.start))
-        )
-        .map((slot: { start: string; end: string }) => ({
-          start: parseISO(slot.start),
-          end: parseISO(slot.end),
-        }))
-      setAvailableSlots(filteredSlots)
+      
+      const teacherData = teacherDocSnapshot.data() as Teacher
+      
+      let allSlots: TimeSlot[] = []
+
+      for (const date of dates) {
+        const dayOfWeek = format(date, 'EEEE').toLowerCase()
+        const teacherAvailability = teacherData.availability[dayOfWeek]
+        
+        if (teacherAvailability) {
+          const startTime = parseISO(`${format(date, 'yyyy-MM-dd')}T${teacherAvailability.start}`)
+          const endTime = parseISO(`${format(date, 'yyyy-MM-dd')}T${teacherAvailability.end}`)
+
+          let currentSlotStart = startTime
+          while (currentSlotStart < endTime) {
+            const slotEnd = addMinutes(currentSlotStart, selectedPlan!.minutesPerSession)
+            if (slotEnd <= endTime) {
+              allSlots.push({ start: currentSlotStart, end: slotEnd })
+            }
+            currentSlotStart = slotEnd
+          }
+        }
+      }
+
+      setAvailableSlots(allSlots)
     } catch (error) {
       console.error('Error fetching available slots:', error)
       setError('Failed to fetch available slots. Please try again.')
@@ -94,27 +214,78 @@ export default function LessonBooking() {
   }
 
   const handleBookLesson = async () => {
-    if (!selectedSlot || !selectedTeacher) return
+    if (!selectedSlots.length || !selectedTeacher || !selectedDates.length || !selectedPlan) return
 
     setIsLoading(true)
     setError(null)
     try {
-      console.log('Booking details:', {
+      const bookings = selectedSlots.map((slot, index) => ({
         teacherId: selectedTeacher,
-        start: selectedSlot.start,
-        end: selectedSlot.end,
+        studentId: 'currentUserId', // Replace with actual user ID
+        date: format(selectedDates[index], 'yyyy-MM-dd'),
+        startTime: format(slot.start, 'HH:mm'),
+        endTime: format(slot.end, 'HH:mm'),
+        lessonType: selectedPlan.sessionType,
+        status: 'scheduled',
+        subscriptionPlanId: selectedPlan.id,
+        isFreeTrial: isNewUser && index === 0 // Only first lesson is free for new users
+      }))
+
+      const bookingRef = await addDoc(collection(db, 'bookings'), { bookings })
+      setBookingId(bookingRef.id)
+
+      // Calculate the amount to charge
+      const freeTrialDiscount = isNewUser ? selectedPlan.price / 4 : 0 // Assuming 4 weeks in a month
+      const amountToCharge = Math.max(0, selectedPlan.price - freeTrialDiscount)
+
+      // Create a payment intent
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId: bookingRef.id,
+          amount: Math.round(amountToCharge * 100), // amount in cents
+          currency: selectedPlan.currency,
+        }),
       })
 
-      alert('Lesson booked successfully! (Details logged to console)')
-      setSelectedSlot(null)
-      setSelectedTeacher(undefined)
-      setSelectedDate(null)
-      setCurrentStep(0)
+      const { clientSecret } = await response.json()
+      setPaymentIntentClientSecret(clientSecret)
+
+      // Move to payment step
+      setCurrentStep(steps.length - 1) // Payment is the last step
+
     } catch (error) {
       console.error('Error booking lesson:', error)
       setError('Failed to book lesson. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handlePaymentSuccess = async () => {
+    if (!bookingId) return;
+
+    try {
+      // Update the booking status
+      await updateDoc(doc(db, 'bookings', bookingId), {
+        status: 'paid'
+      });
+
+      alert('Payment successful! Your lessons have been booked.');
+      // Reset the booking form
+      setSelectedSlots([])
+      setSelectedTeacher(undefined)
+      setSelectedDates([])
+      setSelectedPlan(undefined)
+      setCurrentStep(0)
+      setBookingId(null)
+      setPaymentIntentClientSecret(null)
+    } catch (error) {
+      console.error('Error updating booking status:', error)
+      setError('Payment successful, but there was an error updating your booking. Please contact support.')
     }
   }
 
@@ -141,10 +312,16 @@ export default function LessonBooking() {
           {days.map((day, index) => (
             <Button
               key={index}
-              onClick={() => setSelectedDate(day)}
-              variant={isSameDay(day, selectedDate || new Date()) ? "default" : "outline"}
+              onClick={() => {
+                if (selectedDates.find(d => isSameDay(d, day))) {
+                  setSelectedDates(selectedDates.filter(d => !isSameDay(d, day)))
+                } else if (selectedDates.length < selectedPlan!.sessionsPerWeek) {
+                  setSelectedDates([...selectedDates, day])
+                }
+              }}
+              variant={selectedDates.find(d => isSameDay(d, day)) ? "default" : "outline"}
               className="flex flex-col items-center p-2 h-auto"
-              disabled={!isFuture(day)}
+              disabled={!isFuture(day) || (selectedDates.length >= selectedPlan!.sessionsPerWeek && !selectedDates.find(d => isSameDay(d, day)))}
             >
               <span className="text-xs">{format(day, 'EEE')}</span>
               <span className="text-lg">{format(day, 'd')}</span>
@@ -153,10 +330,6 @@ export default function LessonBooking() {
         </div>
       </div>
     )
-  }
-
-  const formatTime = (date: Date) => {
-    return format(date, 'h:mm a')
   }
 
   return (
@@ -169,8 +342,8 @@ export default function LessonBooking() {
       >
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/3 bg-blue-600 p-8 text-white flex flex-col justify-center">
-            <h1 className="text-4xl font-bold mb-4">Book Your Lesson</h1>
-            <p className="mb-8">Follow these steps to schedule your perfect learning session.</p>
+            <h1 className="text-4xl font-bold mb-4">Book Your Lessons</h1>
+            <p className="mb-8">Follow these steps to schedule your perfect learning sessions.</p>
             <div className="space-y-4">
               {steps.map((step, index) => (
                 <div key={index} className="flex items-center">
@@ -196,6 +369,46 @@ export default function LessonBooking() {
               >
                 {currentStep === 0 && (
                   <>
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Plan</h2>
+                    <div className="space-y-4">
+                      {subscriptionPlans.map((plan) => (
+                        <div key={plan.id} className={`p-4 border rounded-lg ${selectedPlan?.id === plan.id ? 'border-blue-500' : 'border-gray-200'}`}>
+                          <h3 className="text-lg font-semibold">{plan.name}</h3>
+                          <p className="text-xl font-bold">${plan.price}/{plan.interval}</p>
+                          <ul className="mt-2">
+                            {plan.features.map((feature, index) => (
+                              <li key={index} className="flex items-center">
+                                <CheckCircle size={16} className="text-green-500 mr-2" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            onClick={() => {
+                              setSelectedPlan(plan);
+                              nextStep();
+                            }}
+                            className="mt-4 w-full"
+                          >
+                            Select Plan
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center mt-4">
+                      <input
+                        type="checkbox"
+                        id="newUser"
+                        checked={isNewUser}
+                        onChange={(e) => setIsNewUser(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="newUser">I'm a new user (First lesson free)</label>
+                    </div>
+                  </>
+                )}
+                {currentStep === 1 && (
+                  <>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Teacher</h2>
                     <Select onValueChange={(value: string) => { setSelectedTeacher(value); nextStep(); }}>
                       <SelectTrigger>
@@ -209,27 +422,62 @@ export default function LessonBooking() {
                     </Select>
                   </>
                 )}
-                {currentStep === 1 && (
+                {currentStep === 2 && (
                   <>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Choose a Date</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Choose Your Dates</h2>
+                    <p className="mb-2">Select {selectedPlan!.sessionsPerWeek} day{selectedPlan!.sessionsPerWeek > 1 ? 's' : ''} for your weekly sessions.</p>
                     {renderWeekCalendar()}
                   </>
                 )}
-                {currentStep === 2 && (
+                {currentStep === 3 && (
                   <>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select a Time</h2>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableSlots.map((slot, index) => (
-                        <Button
-                          key={index}
-                          onClick={() => setSelectedSlot(slot)}
-                          variant={selectedSlot === slot ? "default" : "outline"}
-                          className="text-sm"
-                        >
-                          {formatTime(slot.start)}
-                        </Button>
-                      ))}
-                    </div>
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Times</h2>
+                    {selectedDates.map((date, dateIndex) => (
+                      <div key={dateIndex} className="mb-4">
+                        <h3 className="font-semibold mb-2">{format(date, 'EEEE, MMMM d')}</h3>
+                        {availableSlots.filter(slot => isSameDay(slot.start, date)).length === 0 ? (
+                          <p>No available slots for this date. Please select another date.</p>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2">
+                            {availableSlots
+                              .filter(slot => isSameDay(slot.start, date))
+                              .map((slot, slotIndex) => (
+                                <Button
+                                  key={slotIndex}
+                                  onClick={() => {
+                                    const newSelectedSlots = [...selectedSlots];
+                                    newSelectedSlots[dateIndex] = slot;
+                                    setSelectedSlots(newSelectedSlots);
+                                  }}
+                                  variant={selectedSlots[dateIndex] === slot ? "default" : "outline"}
+                                  className="text-sm"
+                                >
+                                  {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
+                                </Button>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
+                {currentStep === 4 && paymentIntentClientSecret && (
+                  <>
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Payment</h2>
+                    <p className="mb-4">
+                      Total amount: ${isNewUser ? 
+                        (selectedPlan!.price * 0.75).toFixed(2) : 
+                        selectedPlan!.price.toFixed(2)
+                      } 
+                      {isNewUser && " (25% off for new users)"}
+                    </p>
+                    <Elements stripe={stripePromise}>
+                      <PaymentForm 
+                        clientSecret={paymentIntentClientSecret} 
+                        onSuccess={handlePaymentSuccess}
+                      />
+                    </Elements>
                   </>
                 )}
               </motion.div>
@@ -239,11 +487,20 @@ export default function LessonBooking() {
                 Previous
               </Button>
               {currentStep < steps.length - 1 ? (
-                <Button onClick={nextStep} disabled={currentStep === 1 && !selectedDate}>
+                <Button onClick={nextStep} disabled={
+                  (currentStep === 0 && !selectedPlan) ||
+                  (currentStep === 1 && !selectedTeacher) ||
+                  (currentStep === 2 && selectedDates.length < selectedPlan!.sessionsPerWeek) ||
+                  (currentStep === 3 && selectedSlots.length < selectedPlan!.sessionsPerWeek)
+                }>
                   Next
                 </Button>
               ) : (
-                <Button onClick={handleBookLesson} disabled={!selectedSlot}>Book Lesson</Button>
+                currentStep !== 4 && (
+                  <Button onClick={handleBookLesson} disabled={selectedSlots.length < selectedPlan!.sessionsPerWeek}>
+                    Proceed to Payment
+                  </Button>
+                )
               )}
             </div>
           </div>

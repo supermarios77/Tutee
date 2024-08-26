@@ -1,40 +1,17 @@
-import dotenv from 'dotenv';
-import admin from 'firebase-admin';
-import path from 'path';
+// app/setup-database.ts
 
-dotenv.config();
-
-// Path to your downloaded JSON key file
-const serviceAccountPath = path.join(__dirname, '../tutee-uk-firebase-adminsdk-salk4-a7df43c6ad.json');
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { Teacher, SubscriptionPlan, Booking, User } from '@/types/types';
 
 // Initialize Firebase Admin SDK
-admin.initializeApp({
-  credential: admin.credential.cert(require(serviceAccountPath) as admin.ServiceAccount)
-});
-
-const db = admin.firestore();
-
-interface Teacher {
-  id: string;
-  name: string;
-  email: string;
-  bio: string;
-  hourlyRate: number;
-  availability: {
-    [key: string]: { start: string; end: string };
-  };
-  bookings: any[]; // You might want to define a more specific type for bookings
+if (!getApps().length) {
+  initializeApp({
+    credential: cert(require('../tutee-uk-firebase-adminsdk-salk4-a7df43c6ad.json'))
+  });
 }
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  currency: string;
-  interval: string;
-  description: string;
-  features: string[];
-}
+const db = getFirestore();
 
 const teachers: Teacher[] = [
   {
@@ -100,6 +77,65 @@ const subscriptionPlans: SubscriptionPlan[] = [
   }
 ];
 
+const users: User[] = [
+  {
+    id: 'user1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'student',
+    subscriptionPlanId: 'one-to-one-sessions',
+    subscriptionStatus: 'active',
+    createdAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+  },
+  {
+    id: 'user2',
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    role: 'student',
+    subscriptionPlanId: 'group-sessions',
+    subscriptionStatus: 'active',
+    createdAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+  },
+];
+
+const bookings: Booking[] = [
+  {
+    id: 'booking1',
+    teacherId: 'teacher1',
+    studentId: 'user1',
+    date: '2024-03-01',
+    startTime: '10:00',
+    endTime: '11:00',
+    lessonType: 'individual',
+    status: 'scheduled',
+    notes: 'Focus on business English',
+  },
+  {
+    id: 'booking2',
+    teacherId: 'teacher2',
+    studentId: 'user2',
+    date: '2024-03-02',
+    startTime: '14:00',
+    endTime: '15:00',
+    lessonType: 'group',
+    status: 'scheduled',
+    notes: 'Conversation practice',
+  },
+  {
+    id: 'booking3',
+    teacherId: 'teacher1',
+    studentId: 'user1',
+    date: new Date().toISOString().split('T')[0],
+    startTime: new Date().toTimeString().split(' ')[0].slice(0, 5),
+    endTime: new Date(Date.now() + 30*60000).toTimeString().split(' ')[0].slice(0, 5),
+    lessonType: 'instant',
+    status: 'scheduled',
+    notes: 'Instant booking for immediate language help',
+  },
+];
+
 async function clearAllData(): Promise<void> {
   const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings'];
   for (const collectionName of collections) {
@@ -128,7 +164,21 @@ async function populateSubscriptionPlans(): Promise<void> {
   }
 }
 
-async function setupDatabase(): Promise<void> {
+async function populateUsers(): Promise<void> {
+  for (const user of users) {
+    await db.collection('users').doc(user.id).set(user);
+    console.log(`User ${user.name} added successfully.`);
+  }
+}
+
+async function populateBookings(): Promise<void> {
+  for (const booking of bookings) {
+    await db.collection('bookings').doc(booking.id).set(booking);
+    console.log(`Booking ${booking.id} added successfully.`);
+  }
+}
+
+export async function setupDatabase(): Promise<void> {
   try {
     console.log('Clearing old data...');
     await clearAllData();
@@ -139,13 +189,14 @@ async function setupDatabase(): Promise<void> {
     console.log('Populating subscription plans...');
     await populateSubscriptionPlans();
 
+    console.log('Populating users...');
+    await populateUsers();
+
+    console.log('Populating bookings...');
+    await populateBookings();
+
     console.log('Database setup completed successfully');
   } catch (error) {
     console.error('Error setting up database:', error);
-  } finally {
-    process.exit();
   }
 }
-
-console.log('Starting database setup...');
-setupDatabase();

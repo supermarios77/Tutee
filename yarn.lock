@@ -4553,6 +4553,18 @@
     clsx "^2.0.0"
     react-chartjs-2 "^5.2.0"
 
+"@stripe/react-stripe-js@^2.8.0":
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/@stripe/react-stripe-js/-/react-stripe-js-2.8.0.tgz#ffb6c13ed8dca45fbc234890c8ccfcf94a28893a"
+  integrity sha512-Vf1gNEuBxA9EtxiLghm2ZWmgbADNMJw4HW6eolUu0DON/6mZvWZgk0KHolN0sozNJwYp0i/8hBsDBcBUWcvnbw==
+  dependencies:
+    prop-types "^15.7.2"
+
+"@stripe/stripe-js@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@stripe/stripe-js/-/stripe-js-4.3.0.tgz#5e8fe1e654413698f33cbc7008fef1e86e16b030"
+  integrity sha512-bf8MxzzgD3dybtyIJUQSDMqxjEkJfsmj9IdRqDv609Zw08R41O7eoIy0f8KY41u8MbaFOYsn+XGJZtg1xwR2wQ==
+
 "@swc/counter@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@swc/counter/-/counter-0.1.3.tgz#cc7463bd02949611c6329596fccd2b0ec782b0e9"
@@ -4746,7 +4758,7 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/node@^22.0.1":
+"@types/node@>=8.1.0", "@types/node@^22.0.1":
   version "22.5.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-22.5.0.tgz#10f01fe9465166b4cab72e75f60d8b99d019f958"
   integrity sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==
@@ -4817,6 +4829,13 @@
     "@types/http-errors" "*"
     "@types/node" "*"
     "@types/send" "*"
+
+"@types/stripe@^8.0.417":
+  version "8.0.417"
+  resolved "https://registry.yarnpkg.com/@types/stripe/-/stripe-8.0.417.tgz#b651677a9fc33be8ce8fd5bceadd7ca077214244"
+  integrity sha512-PTuqskh9YKNENnOHGVJBm4sM0zE8B1jZw1JIskuGAPkMB+OH236QeN8scclhYGPA4nG6zTtPXgwpXdp+HPDTVw==
+  dependencies:
+    stripe "*"
 
 "@types/tinycolor2@^1.4.0":
   version "1.4.6"
@@ -9122,6 +9141,13 @@ qrcode.react@^3.1.0:
   resolved "https://registry.yarnpkg.com/qrcode.react/-/qrcode.react-3.1.0.tgz#5c91ddc0340f768316fbdb8fff2765134c2aecd8"
   integrity sha512-oyF+Urr3oAMUG/OiOuONL3HXM+53wvuH3mtIWQrYmsXoAq0DkvZp2RYUWFSMFtbdOpuS++9v+WAkzNVkMlNW6Q==
 
+qs@^6.11.0:
+  version "6.13.0"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.13.0.tgz#6ca3bd58439f7e245655798997787b0d88a51906"
+  integrity sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==
+  dependencies:
+    side-channel "^1.0.6"
+
 qs@^6.7.0:
   version "6.12.3"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.12.3.tgz#e43ce03c8521b9c7fd7f1f13e514e5ca37727754"
@@ -10043,6 +10069,14 @@ strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
+
+stripe@*:
+  version "16.8.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-16.8.0.tgz#1433e21c5f7505d270f5bc5228d08a6b63a43546"
+  integrity sha512-6rOIcGOkxcc29jvhEyOYmpPFilekOBV+7vpemAoIAfbtCRW1yxzdDGM0/0vyekHglLL+wqGpP5ldrhO3dJ2JEQ==
+  dependencies:
+    "@types/node" ">=8.1.0"
+    qs "^6.11.0"
 
 strnum@^1.0.5:
   version "1.0.5"
