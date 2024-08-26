@@ -1,8 +1,6 @@
-// app/setup-database.ts
-
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { Teacher, SubscriptionPlan, Booking, User } from '@/types/types';
+import { Teacher, SubscriptionPlan, Booking, User } from '@/types/booking';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
@@ -59,7 +57,10 @@ const subscriptionPlans: SubscriptionPlan[] = [
       '2x30 minute sessions',
       'Includes resources',
       'Interesting and interactive topics'
-    ]
+    ],
+    sessionType: 'group',
+    sessionsPerWeek: 2,
+    minutesPerSession: 30
   },
   {
     id: 'one-to-one-sessions',
@@ -73,7 +74,10 @@ const subscriptionPlans: SubscriptionPlan[] = [
       'Split sessions into 2x30min classes',
       'Resources for extra learning included',
       'Tailored teaching approach'
-    ]
+    ],
+    sessionType: 'individual',
+    sessionsPerWeek: 1,
+    minutesPerSession: 60
   }
 ];
 
@@ -87,6 +91,7 @@ const users: User[] = [
     subscriptionStatus: 'active',
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
+    hasClaimedFreeTrial: false
   },
   {
     id: 'user2',
@@ -97,6 +102,7 @@ const users: User[] = [
     subscriptionStatus: 'active',
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
+    hasClaimedFreeTrial: true
   },
 ];
 

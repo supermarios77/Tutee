@@ -1,92 +1,23 @@
-'use client'
-
 import React, { useState, useEffect } from 'react'
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Clock, CalendarIcon, CheckCircle, ChevronLeft, ChevronRight, Zap, Users } from 'lucide-react'
-import { format, addDays, startOfWeek, addWeeks, isSameDay, parseISO, isValid, isFuture, startOfDay, addMinutes } from 'date-fns'
+import { User, Clock, CalendarIcon, CheckCircle, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react'
+import { format, addDays, startOfWeek, addWeeks, isSameDay, parseISO, isFuture, addMinutes } from 'date-fns'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Teacher, SubscriptionPlan, TimeSlot } from '@/types/booking'
+import { useUser } from '@clerk/nextjs'
+import { useUserBookingInfo } from '@/hooks/useUserBookingInfo'
+import { subscriptionPlans, bookingSteps } from '@/constants/booking'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 // Load Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
-interface Teacher {
-  id: string;
-  name: string;
-  email: string;
-  bio: string;
-  hourlyRate: number;
-  availability: {
-    [key: string]: { start: string; end: string };
-  };
-}
-
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  currency: string;
-  interval: string;
-  description: string;
-  features: string[];
-  sessionType: 'group' | 'individual';
-  sessionsPerWeek: number;
-  minutesPerSession: number;
-}
-
-interface TimeSlot {
-  start: Date;
-  end: Date;
-}
-
-const subscriptionPlans: SubscriptionPlan[] = [
-  {
-    id: 'group-sessions',
-    name: 'Group Sessions',
-    price: 59.99,
-    currency: 'USD',
-    interval: 'month',
-    description: 'Up to 4 people, 2x30 minute sessions per week',
-    features: [
-      'Up to 4 people',
-      '2x30 minute sessions',
-      'Includes resources',
-      'Interesting and interactive topics'
-    ],
-    sessionType: 'group',
-    sessionsPerWeek: 2,
-    minutesPerSession: 30
-  },
-  {
-    id: 'one-to-one-sessions',
-    name: 'One To One Sessions',
-    price: 70.00,
-    currency: 'USD',
-    interval: 'month',
-    description: '1 hour a week of personalized tutoring',
-    features: [
-      '1 hour a week',
-      'Split sessions into 2x30min classes',
-      'Resources for extra learning included',
-      'Tailored teaching approach'
-    ],
-    sessionType: 'individual',
-    sessionsPerWeek: 1,
-    minutesPerSession: 60
-  }
-];
-
-const steps = [
-  { title: 'Select Plan', icon: Users },
-  { title: 'Select Teacher', icon: User },
-  { title: 'Choose Dates', icon: CalendarIcon },
-  { title: 'Select Times', icon: Clock },
-  { title: 'Payment', icon: Clock },
-]
 
 const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSuccess: () => void }) => {
   const stripe = useStripe();
@@ -119,13 +50,63 @@ const PaymentForm = ({ clientSecret, onSuccess }: { clientSecret: string, onSucc
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <CardElement />
-      {error && <div className="text-red-500 mt-2">{error}</div>}
-      <Button type="submit" disabled={!stripe || processing} className="mt-4">
-        Pay
-      </Button>
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-center">
+          <CreditCard className="mr-2" />
+          Secure Payment
+        </CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent>
+          <div className="mb-4">
+            <label htmlFor="card-element" className="block text-sm font-medium mb-2">
+              Card Details
+            </label>
+            <div className="border rounded-md p-3 bg-white dark:bg-gray-800">
+              <CardElement
+                id="card-element"
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#424770',
+                      '::placeholder': {
+                        color: '#aab7c4',
+                      },
+                    },
+                    invalid: {
+                      color: '#9e2146',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+          {error && (
+            <div className="text-red-500 bg-red-100 dark:bg-red-900 p-3 rounded-md mt-2 text-sm" role="alert">
+              <p>{error}</p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button 
+            type="submit" 
+            disabled={!stripe || processing} 
+            className="w-full flex items-center justify-center"
+          >
+            {processing ? (
+              <>
+                <span className="mr-2">Processing</span>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              </>
+            ) : (
+              'Pay Securely'
+            )}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 };
 
@@ -143,6 +124,9 @@ export default function LessonBooking() {
   const [isNewUser, setIsNewUser] = useState(false)
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string | null>(null)
   const [bookingId, setBookingId] = useState<string | null>(null)
+
+  const { user } = useUser();
+  const { userBookingInfo, isLoading: isUserInfoLoading } = useUserBookingInfo();
 
   useEffect(() => {
     fetchTeachers()
@@ -214,28 +198,28 @@ export default function LessonBooking() {
   }
 
   const handleBookLesson = async () => {
-    if (!selectedSlots.length || !selectedTeacher || !selectedDates.length || !selectedPlan) return
+    if (!selectedSlots.length || !selectedTeacher || !selectedDates.length || !selectedPlan || !user) return
 
     setIsLoading(true)
     setError(null)
     try {
       const bookings = selectedSlots.map((slot, index) => ({
         teacherId: selectedTeacher,
-        studentId: 'currentUserId', // Replace with actual user ID
+        studentId: user.id,
         date: format(selectedDates[index], 'yyyy-MM-dd'),
         startTime: format(slot.start, 'HH:mm'),
         endTime: format(slot.end, 'HH:mm'),
         lessonType: selectedPlan.sessionType,
         status: 'scheduled',
         subscriptionPlanId: selectedPlan.id,
-        isFreeTrial: isNewUser && index === 0 // Only first lesson is free for new users
+        isFreeTrial: isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && index === 0
       }))
 
       const bookingRef = await addDoc(collection(db, 'bookings'), { bookings })
       setBookingId(bookingRef.id)
 
       // Calculate the amount to charge
-      const freeTrialDiscount = isNewUser ? selectedPlan.price / 4 : 0 // Assuming 4 weeks in a month
+      const freeTrialDiscount = isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? selectedPlan.price / 4 : 0 // Assuming 4 weeks in a month
       const amountToCharge = Math.max(0, selectedPlan.price - freeTrialDiscount)
 
       // Create a payment intent
@@ -255,7 +239,7 @@ export default function LessonBooking() {
       setPaymentIntentClientSecret(clientSecret)
 
       // Move to payment step
-      setCurrentStep(steps.length - 1) // Payment is the last step
+      setCurrentStep(bookingSteps.length - 1) // Payment is the last step
 
     } catch (error) {
       console.error('Error booking lesson:', error)
@@ -266,13 +250,20 @@ export default function LessonBooking() {
   }
 
   const handlePaymentSuccess = async () => {
-    if (!bookingId) return;
+    if (!bookingId || !user) return;
 
     try {
       // Update the booking status
       await updateDoc(doc(db, 'bookings', bookingId), {
         status: 'paid'
       });
+
+      // If this was a free trial, update the user's booking info
+      if (isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial) {
+        await updateDoc(doc(db, 'users', user.id), {
+          hasClaimedFreeTrial: true
+        });
+      }
 
       alert('Payment successful! Your lessons have been booked.');
       // Reset the booking form
@@ -289,7 +280,7 @@ export default function LessonBooking() {
     }
   }
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, bookingSteps.length - 1))
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0))
 
   const renderWeekCalendar = () => {
@@ -310,22 +301,33 @@ export default function LessonBooking() {
         </div>
         <div className="grid grid-cols-7 gap-2">
           {days.map((day, index) => (
-            <Button
-              key={index}
-              onClick={() => {
-                if (selectedDates.find(d => isSameDay(d, day))) {
-                  setSelectedDates(selectedDates.filter(d => !isSameDay(d, day)))
-                } else if (selectedDates.length < selectedPlan!.sessionsPerWeek) {
-                  setSelectedDates([...selectedDates, day])
-                }
-              }}
-              variant={selectedDates.find(d => isSameDay(d, day)) ? "default" : "outline"}
-              className="flex flex-col items-center p-2 h-auto"
-              disabled={!isFuture(day) || (selectedDates.length >= selectedPlan!.sessionsPerWeek && !selectedDates.find(d => isSameDay(d, day)))}
-            >
-              <span className="text-xs">{format(day, 'EEE')}</span>
-              <span className="text-lg">{format(day, 'd')}</span>
-            </Button>
+            <TooltipProvider key={index}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      if (selectedDates.find(d => isSameDay(d, day))) {
+                        setSelectedDates(selectedDates.filter(d => !isSameDay(d, day)))
+                      } else if (selectedDates.length < selectedPlan!.sessionsPerWeek) {
+                        setSelectedDates([...selectedDates, day])
+                      }
+                    }}
+                    variant={selectedDates.find(d => isSameDay(d, day)) ? "default" : "outline"}
+                    className="flex flex-col items-center p-2 h-auto"
+                    disabled={!isFuture(day) || (selectedDates.length >= selectedPlan!.sessionsPerWeek && !selectedDates.find(d => isSameDay(d, day)))}
+                  >
+                    <span className="text-xs">{format(day, 'EEE')}</span>
+                    <span className="text-lg">{format(day, 'd')}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isFuture(day) ? 
+                    (selectedDates.find(d => isSameDay(d, day)) ? 'Click to unselect' : 'Click to select') :
+                    'Past date'
+                  }
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </div>
       </div>
@@ -341,11 +343,11 @@ export default function LessonBooking() {
         className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
       >
         <div className="flex flex-col md:flex-row">
-          <div className="w-full md:w-1/3 bg-blue-600 p-8 text-white flex flex-col justify-center">
+          <div className="w-full md:w-1/3 bg-blue-600 p-8 text-white">
             <h1 className="text-4xl font-bold mb-4">Book Your Lessons</h1>
             <p className="mb-8">Follow these steps to schedule your perfect learning sessions.</p>
             <div className="space-y-4">
-              {steps.map((step, index) => (
+              {bookingSteps.map((step, index) => (
                 <div key={index} className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
                     index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
@@ -370,41 +372,44 @@ export default function LessonBooking() {
                 {currentStep === 0 && (
                   <>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Plan</h2>
-                    <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
                       {subscriptionPlans.map((plan) => (
-                        <div key={plan.id} className={`p-4 border rounded-lg ${selectedPlan?.id === plan.id ? 'border-blue-500' : 'border-gray-200'}`}>
-                          <h3 className="text-lg font-semibold">{plan.name}</h3>
-                          <p className="text-xl font-bold">${plan.price}/{plan.interval}</p>
-                          <ul className="mt-2">
-                            {plan.features.map((feature, index) => (
-                              <li key={index} className="flex items-center">
-                                <CheckCircle size={16} className="text-green-500 mr-2" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                          <Button
-                            onClick={() => {
-                              setSelectedPlan(plan);
-                              nextStep();
-                            }}
-                            className="mt-4 w-full"
-                          >
-                            Select Plan
-                          </Button>
-                        </div>
+                        <Card key={plan.id} className={`cursor-pointer transition-all duration-300 ${selectedPlan?.id === plan.id ? 'ring-2 ring-blue-500' : ''}`}
+                             onClick={() => setSelectedPlan(plan)}>
+                          <CardHeader>
+                            <CardTitle>{plan.name}</CardTitle>
+                            <CardDescription>${plan.price}/{plan.interval}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2">
+                              {plan.features.map((feature, index) => (
+                                <li key={index} className="flex items-center">
+                                  <CheckCircle size={16} className="text-green-500 mr-2" />
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                          <CardFooter>
+                            <Button className="w-full" variant={selectedPlan?.id === plan.id ? "default" : "outline"}>
+                              {selectedPlan?.id === plan.id ? 'Selected' : 'Select Plan'}
+                            </Button>
+                          </CardFooter>
+                        </Card>
                       ))}
                     </div>
-                    <div className="flex items-center mt-4">
-                      <input
-                        type="checkbox"
-                        id="newUser"
-                        checked={isNewUser}
-                        onChange={(e) => setIsNewUser(e.target.checked)}
-                        className="mr-2"
-                      />
-                      <label htmlFor="newUser">I'm a new user (First lesson free)</label>
-                    </div>
+                    {userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && (
+                      <div className="flex items-center mt-4">
+                        <input
+                          type="checkbox"
+                          id="newUser"
+                          checked={isNewUser}
+                          onChange={(e) => setIsNewUser(e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label htmlFor="newUser">I'm a new user (First lesson free)</label>
+                      </div>
+                    )}
                   </>
                 )}
                 {currentStep === 1 && (
@@ -433,32 +438,36 @@ export default function LessonBooking() {
                   <>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Times</h2>
                     {selectedDates.map((date, dateIndex) => (
-                      <div key={dateIndex} className="mb-4">
-                        <h3 className="font-semibold mb-2">{format(date, 'EEEE, MMMM d')}</h3>
-                        {availableSlots.filter(slot => isSameDay(slot.start, date)).length === 0 ? (
-                          <p>No available slots for this date. Please select another date.</p>
-                        ) : (
-                          <div className="grid grid-cols-2 gap-2">
-                            {availableSlots
-                              .filter(slot => isSameDay(slot.start, date))
-                              .map((slot, slotIndex) => (
-                                <Button
-                                  key={slotIndex}
-                                  onClick={() => {
-                                    const newSelectedSlots = [...selectedSlots];
-                                    newSelectedSlots[dateIndex] = slot;
-                                    setSelectedSlots(newSelectedSlots);
-                                  }}
-                                  variant={selectedSlots[dateIndex] === slot ? "default" : "outline"}
-                                  className="text-sm"
-                                >
-                                  {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
-                                </Button>
-                              ))
-                            }
-                          </div>
-                        )}
-                      </div>
+                      <Card key={dateIndex} className="mb-4">
+                        <CardHeader>
+                          <CardTitle>{format(date, 'EEEE, MMMM d')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {availableSlots.filter(slot => isSameDay(slot.start, date)).length === 0 ? (
+                            <p>No available slots for this date. Please select another date.</p>
+                          ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {availableSlots
+                                .filter(slot => isSameDay(slot.start, date))
+                                .map((slot, slotIndex) => (
+                                  <Button
+                                    key={slotIndex}
+                                    onClick={() => {
+                                      const newSelectedSlots = [...selectedSlots];
+                                      newSelectedSlots[dateIndex] = slot;
+                                      setSelectedSlots(newSelectedSlots);
+                                    }}
+                                    variant={selectedSlots[dateIndex] === slot ? "default" : "outline"}
+                                    className="text-sm"
+                                  >
+                                    {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
+                                  </Button>
+                                ))
+                              }
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     ))}
                   </>
                 )}
@@ -466,11 +475,13 @@ export default function LessonBooking() {
                   <>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Payment</h2>
                     <p className="mb-4">
-                      Total amount: ${isNewUser ? 
+                      Total amount: ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? 
                         (selectedPlan!.price * 0.75).toFixed(2) : 
                         selectedPlan!.price.toFixed(2)
                       } 
-                      {isNewUser && " (25% off for new users)"}
+                      {isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && (
+                        <Badge variant="secondary" className="ml-2">25% off for new users</Badge>
+                      )}
                     </p>
                     <Elements stripe={stripePromise}>
                       <PaymentForm 
@@ -486,27 +497,33 @@ export default function LessonBooking() {
               <Button onClick={prevStep} disabled={currentStep === 0} variant="outline">
                 Previous
               </Button>
-              {currentStep < steps.length - 1 ? (
+              {currentStep < bookingSteps.length - 1 ? (
                 <Button onClick={nextStep} disabled={
                   (currentStep === 0 && !selectedPlan) ||
                   (currentStep === 1 && !selectedTeacher) ||
-                  (currentStep === 2 && selectedDates.length < selectedPlan!.sessionsPerWeek) ||
-                  (currentStep === 3 && selectedSlots.length < selectedPlan!.sessionsPerWeek)
+                  (currentStep === 2 && selectedDates.length < (selectedPlan?.sessionsPerWeek || 0)) ||
+                  (currentStep === 3 && selectedSlots.length < (selectedPlan?.sessionsPerWeek || 0))
                 }>
                   Next
                 </Button>
-              ) : (
-                currentStep !== 4 && (
-                  <Button onClick={handleBookLesson} disabled={selectedSlots.length < selectedPlan!.sessionsPerWeek}>
-                    Proceed to Payment
-                  </Button>
-                )
-              )}
+              ) : currentStep === bookingSteps.length - 1 && !paymentIntentClientSecret ? (
+                <Button onClick={handleBookLesson} disabled={selectedSlots.length < (selectedPlan?.sessionsPerWeek || 0)}>
+                  Proceed to Payment
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
       </motion.div>
-      {error && <div className="mt-4 text-red-500 text-center p-2 bg-red-100 dark:bg-red-900 rounded">{error}</div>}
+      {error && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 text-red-500 text-center p-2 bg-red-100 dark:bg-red-900 rounded"
+        >
+          {error}
+        </motion.div>
+      )}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
