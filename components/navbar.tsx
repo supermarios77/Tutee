@@ -7,20 +7,16 @@ import {
   NavbarBrand,
   NavbarItem,
 } from '@nextui-org/navbar';
-import { Link } from '@nextui-org/link';
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 import NextLink from 'next/link';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { LanguageSwitcher } from './lang-switcher';
-import { SignedIn, SignedOut, useSession } from '@clerk/nextjs';
+import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { BookOpenIcon, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const checkUserRole = (session: any) => {
-  const roles = session?.sessionClaims?.metadata?.roles || [];
-  return roles.includes('admin');
-};
+import { useRouter } from 'next/navigation';
+import { UserWithMetadata, checkUserRole } from '@/types/user';
 
 interface NavbarLinkProps {
   href: string;
@@ -42,15 +38,17 @@ const NavbarLink: React.FC<NavbarLinkProps> = ({ href, children, onClick }) => (
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { session } = useSession();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [dashboardLink, setDashboardLink] = useState('/student-dashboard');
+  const { isLoaded, isSignedIn, user } = useUser();
+  const router = useRouter();
 
-  useEffect(() => {
-    const adminStatus = checkUserRole(session);
-    setIsAdmin(adminStatus);
-    setDashboardLink(adminStatus ? '/dashboard' : '/student-dashboard');
-  }, [session]);
+  const handleDashboardClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (isSignedIn && user) {
+      const isAdmin = checkUserRole(user as UserWithMetadata);
+      const dashboardLink = isAdmin ? '/dashboard' : '/student-dashboard';
+      router.push(dashboardLink);
+    }
+  };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -98,8 +96,13 @@ export const Navbar = () => {
           <SignedIn>
             <NavbarItem className="hidden md:flex">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button asChild variant="default" size="lg" className="text-lg font-semibold bg-primary/90 hover:bg-primary/100 text-white">
-                  <NextLink href={dashboardLink}>Dashboard</NextLink>
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="text-lg font-semibold bg-primary/90 hover:bg-primary/100 text-white"
+                  onClick={handleDashboardClick}
+                >
+                  Dashboard
                 </Button>
               </motion.div>
             </NavbarItem>
@@ -111,8 +114,13 @@ export const Navbar = () => {
               </Button>
             </SignedOut>
             <SignedIn>
-              <Button asChild variant="default" size="sm" className="text-sm font-semibold bg-primary/90 hover:bg-primary/100 text-white mr-2">
-                <NextLink href={dashboardLink}>Dashboard</NextLink>
+              <Button
+                variant="default"
+                size="sm"
+                className="text-sm font-semibold bg-primary/90 hover:bg-primary/100 text-white mr-2"
+                onClick={handleDashboardClick}
+              >
+                Dashboard
               </Button>
             </SignedIn>
             <Button
