@@ -9,6 +9,5 @@ export type UserWithMetadata = UserResource & {
 };
 
 export function checkUserRole(user: UserWithMetadata | null): boolean {
-  const role = user?.publicMetadata?.role;
-  return role === 'admin';
+  return user?.publicMetadata?.role === 'admin';
 }

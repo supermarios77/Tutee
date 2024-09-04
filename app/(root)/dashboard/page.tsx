@@ -1,11 +1,21 @@
 import MeetingTypeList from '@/components/Meeting/MeetingTypeList';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { UserWithMetadata, checkUserRole } from '@/types/user';
 
 const Home = async () => {
-  const { sessionClaims } = auth();
+  const { userId, sessionClaims } = auth();
 
-  if (sessionClaims?.metadata.role !== 'admin') {
+  if (!userId) {
+    console.log('No user ID found. Redirecting to sign-in.');
+    redirect('/sign-in');
+  }
+
+  // Cast sessionClaims to include publicMetadata
+  const userMetadata = sessionClaims as unknown as { publicMetadata?: { role?: string } };
+
+  if (!checkUserRole(userMetadata as UserWithMetadata)) {
+    console.log('User is not an admin. Redirecting to home.');
     redirect('/');
   }
 
