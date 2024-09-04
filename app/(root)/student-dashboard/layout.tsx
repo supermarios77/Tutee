@@ -1,7 +1,5 @@
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
-
-import Navbar from '@/components/Dashboard/Navbar';
 import StudentSidebar from '@/components/Dashboard/StudentSidebar';
 
 import "@/styles/globals.css";
@@ -11,20 +9,15 @@ export const metadata: Metadata = {
   description: '',
 };
 
-const RootLayout = ({ children }: Readonly<{children: ReactNode}>) => {
+export default function RootLayout({ children }: Readonly<{children: ReactNode}>) {
   return (
-    <main className="relative">
-      <Navbar />
 
-      <div className="flex">
+      <main className="flex h-screen overflow-hidden bg-gray-100 dark:bg-[#0A0A1B] text-gray-900 dark:text-white transition-colors duration-300">
         <StudentSidebar />
-        
-        <section className="flex min-h-screen flex-1 flex-col px-6 pb-6 pt-28 max-md:pb-14 sm:px-14">
-          <div className="w-full">{children}</div>
+        <section className="flex-1 overflow-y-auto">
+          {children}
         </section>
-      </div>
-    </main>
-  );
-};
+      </main>
 
-export default RootLayout;
+  );
+}

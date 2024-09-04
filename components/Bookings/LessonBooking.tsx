@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, arrayUnion, increment, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/use-toast'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -92,9 +93,9 @@ const PaymentForm = ({ clientSecret, onSuccess, amount, currency }: { clientSecr
           )}
         </CardContent>
         <CardFooter>
-          <Button 
-            type="submit" 
-            disabled={!stripe || processing} 
+          <Button
+            type="submit"
+            disabled={!stripe || processing}
             className="w-full flex items-center justify-center text-lg py-6"
           >
             {processing ? (
@@ -129,10 +130,12 @@ export default function LessonBooking() {
   const [isNewUser, setIsNewUser] = useState(false)
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string | null>(null)
   const [bookingId, setBookingId] = useState<string | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const { user } = useUser();
   const { userBookingInfo, isLoading: isUserInfoLoading } = useUserBookingInfo();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchTeachers()
@@ -143,6 +146,12 @@ export default function LessonBooking() {
       fetchAvailableSlots(selectedTeacher, selectedDates)
     }
   }, [selectedTeacher, selectedDates])
+
+  useEffect(() => {
+    if (userBookingInfo) {
+      setIsNewUser(!userBookingInfo.hasClaimedFreeTrial);
+    }
+  }, [userBookingInfo]);
 
   const fetchTeachers = async () => {
     setIsLoading(true)
@@ -206,9 +215,46 @@ export default function LessonBooking() {
   const hasActiveBooking = () => {
     if (!userBookingInfo) return false;
     const now = new Date();
-    return userBookingInfo.bookings.some(booking => 
+    return userBookingInfo.bookings.some(booking =>
       new Date(booking.date + 'T' + booking.endTime) > now && booking.status !== 'cancelled'
     );
+  };
+
+  const updateFirebaseAfterBooking = async (bookingId: string, userId: string, isNewUser: boolean) => {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        // Update user's bookings
+        await updateDoc(userRef, {
+          bookings: arrayUnion(bookingId),
+          hasClaimedFreeTrial: isNewUser ? true : userDoc.data().hasClaimedFreeTrial
+        });
+
+        // Update dashboard data
+        const dashboardRef = doc(db, 'dashboards', userId);
+        const dashboardDoc = await getDoc(dashboardRef);
+
+        if (dashboardDoc.exists()) {
+          await updateDoc(dashboardRef, {
+            upcomingLessons: arrayUnion(bookingId),
+            totalLessons: increment(1)
+          });
+        } else {
+          // Create a new dashboard document if it doesn't exist
+          await setDoc(dashboardRef, {
+            upcomingLessons: [bookingId],
+            totalLessons: 1
+          });
+        }
+      } else {
+        console.error("User document not found");
+      }
+    } catch (error) {
+      console.error("Error updating Firebase after booking:", error);
+      throw new Error("Failed to update user information after booking.");
+    }
   };
 
   const handleBookLesson = async () => {
@@ -236,6 +282,9 @@ export default function LessonBooking() {
 
       const bookingRef = await addDoc(collection(db, 'bookings'), { bookings })
       setBookingId(bookingRef.id)
+
+      // Update Firebase and dashboards
+      await updateFirebaseAfterBooking(bookingRef.id, user.id, isNewUser);
 
       // Calculate the amount to charge
       const freeTrialDiscount = isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? selectedPlan.price / 4 : 0 // Assuming 4 weeks in a month
@@ -277,14 +326,17 @@ export default function LessonBooking() {
         status: 'paid'
       });
 
-      // If this was a free trial, update the user's booking info
-      if (isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial) {
-        await updateDoc(doc(db, 'users', user.id), {
-          hasClaimedFreeTrial: true
-        });
-      }
+      // Update the dashboard to reflect the paid status
+      const dashboardRef = doc(db, 'dashboards', user.id);
+      await updateDoc(dashboardRef, {
+        paidLessons: arrayUnion(bookingId)
+      });
 
-      alert('Payment successful! Your lessons have been booked.');
+      toast({
+        title: "Booking Confirmed",
+        description: "Your lesson has been successfully booked and paid for.",
+      });
+
       // Reset the booking form
       setSelectedSlots([])
       setSelectedTeacher(undefined)
@@ -293,6 +345,9 @@ export default function LessonBooking() {
       setCurrentStep(0)
       setBookingId(null)
       setPaymentIntentClientSecret(null)
+
+      // Redirect to dashboard
+      router.push('/student-dashboard');
     } catch (error) {
       console.error('Error updating booking status:', error)
       setError('Payment successful, but there was an error updating your booking. Please contact support.')
@@ -340,7 +395,7 @@ export default function LessonBooking() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {isFuture(day) ? 
+                  {isFuture(day) ?
                     (selectedDates.find(d => isSameDay(d, day)) ? 'Click to unselect' : 'Click to select') :
                     'Past date'
                   }
@@ -379,7 +434,7 @@ export default function LessonBooking() {
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-blue-100 via-white to-purple-100 dark:from-blue-900 dark:via-gray-900 dark:to-purple-900 p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -392,9 +447,8 @@ export default function LessonBooking() {
             <div className="space-y-6">
               {bookingSteps.map((step, index) => (
                 <div key={index} className="flex items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${
-                    index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
+                    }`}>
                     {index < currentStep ? <CheckCircle size={28} /> : <step.icon size={28} />}
                   </div>
                   <span className={`text-xl ${index <= currentStep ? 'font-semibold' : 'text-blue-200'}`}>
@@ -420,7 +474,7 @@ export default function LessonBooking() {
                     <div className="grid gap-4 md:grid-cols-2">
                       {subscriptionPlans.map((plan) => (
                         <Card key={plan.id} className={`cursor-pointer transition-all duration-300 ${selectedPlan?.id === plan.id ? 'ring-2 ring-blue-500' : ''}`}
-                             onClick={() => setSelectedPlan(plan)}>
+                          onClick={() => setSelectedPlan(plan)}>
                           <CardHeader>
                             <CardTitle>{plan.name}</CardTitle>
                             <CardDescription>${plan.price}/{plan.interval}</CardDescription>
@@ -528,8 +582,8 @@ export default function LessonBooking() {
                       <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
                         <span className="text-2xl mb-2">Total amount:</span>
                         <span className="text-5xl font-bold mb-4">
-                          ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? 
-                            (selectedPlan!.price * 0.75).toFixed(2) : 
+                          ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ?
+                            (selectedPlan!.price * 0.75).toFixed(2) :
                             selectedPlan!.price.toFixed(2)
                           }
                         </span>
@@ -557,21 +611,21 @@ export default function LessonBooking() {
                     <CardFooter>
                       {paymentIntentClientSecret ? (
                         <Elements stripe={stripePromise}>
-                          <PaymentForm 
-                            clientSecret={paymentIntentClientSecret} 
+                          <PaymentForm
+                            clientSecret={paymentIntentClientSecret}
                             onSuccess={handlePaymentSuccess}
                             amount={Math.round((isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ? selectedPlan!.price * 0.75 : selectedPlan!.price) * 100)}
                             currency={selectedPlan!.currency}
                           />
                         </Elements>
                       ) : (
-                        <Button 
-                          onClick={handleBookLesson} 
+                        <Button
+                          onClick={() => setIsConfirming(true)}
                           disabled={selectedSlots.length < (selectedPlan?.sessionsPerWeek || 0)}
                           className="w-full text-lg py-6 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white"
                         >
                           <CreditCard className="mr-2 h-6 w-6" />
-                          Proceed to Payment
+                          Review Booking
                         </Button>
                       )}
                     </CardFooter>
@@ -598,7 +652,7 @@ export default function LessonBooking() {
         </div>
       </motion.div>
       {error && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 text-red-500 text-center p-2 bg-red-100 dark:bg-red-900 rounded"
@@ -610,6 +664,33 @@ export default function LessonBooking() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
         </div>
+      )}
+      {isConfirming && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        >
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Confirm Your Booking</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p><strong>Plan:</strong> {selectedPlan?.name}</p>
+              <p><strong>Teacher:</strong> {teachers.find(t => t.id === selectedTeacher)?.name}</p>
+              <p><strong>Dates:</strong> {selectedDates.map(d => format(d, 'MMM d, yyyy')).join(', ')}</p>
+              <p><strong>Total:</strong> ${isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial ?
+                (selectedPlan!.price * 0.75).toFixed(2) :
+                selectedPlan!.price.toFixed(2)}
+              </p>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button onClick={() => setIsConfirming(false)} variant="outline">Edit Booking</Button>
+              <Button onClick={handleBookLesson}>Confirm and Pay</Button>
+            </CardFooter>
+          </Card>
+        </motion.div>
       )}
     </div>
   )
