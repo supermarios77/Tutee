@@ -72,6 +72,7 @@
 		"radix-ui": "^1.0.1",
 		"react": "18.3.1",
 		"react-big-calendar": "^1.13.4",
+		"react-calendar": "^5.0.0",
 		"react-calendly": "^4.3.0",
 		"react-datepicker": "^7.3.0",
 		"react-day-picker": "8.10.1",

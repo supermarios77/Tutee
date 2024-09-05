@@ -1,5 +1,5 @@
 import { getFirestore } from 'firebase-admin/firestore';
-import { Teacher, SubscriptionPlan, Booking, User } from '@/types/booking';
+import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting } from '@/types/booking';
 import { adminDb } from '@/lib/firebase-admin';
 
 const db = adminDb;
@@ -104,51 +104,83 @@ const bookings: Booking[] = [
     id: 'booking1',
     teacherId: 'teacher1',
     studentId: 'user1',
+    studentName: 'John Doe',
     subscriptionPlanId: 'one-to-one-sessions',
     date: '2024-03-01',
     startTime: '10:00',
     endTime: '11:00',
+    time: '10:00 - 11:00',
     lessonType: 'individual',
     status: 'scheduled',
     notes: 'Focus on business English',
-    isFreeTrial: false,
-    studentName: '',
-    time: ''
+    isFreeTrial: false
   },
   {
     id: 'booking2',
     teacherId: 'teacher2',
     studentId: 'user2',
+    studentName: 'Jane Doe',
     subscriptionPlanId: 'group-sessions',
     date: '2024-03-02',
     startTime: '14:00',
     endTime: '15:00',
+    time: '14:00 - 15:00',
     lessonType: 'group',
     status: 'scheduled',
     notes: 'Conversation practice',
-    isFreeTrial: false,
-    studentName: '',
-    time: ''
+    isFreeTrial: false
   },
   {
     id: 'booking3',
     teacherId: 'teacher1',
     studentId: 'user1',
+    studentName: 'John Doe',
     subscriptionPlanId: 'one-to-one-sessions',
     date: new Date().toISOString().split('T')[0],
     startTime: new Date().toTimeString().split(' ')[0].slice(0, 5),
     endTime: new Date(Date.now() + 30 * 60000).toTimeString().split(' ')[0].slice(0, 5),
+    time: `${new Date().toTimeString().split(' ')[0].slice(0, 5)} - ${new Date(Date.now() + 30 * 60000).toTimeString().split(' ')[0].slice(0, 5)}`,
     lessonType: 'instant',
     status: 'scheduled',
     notes: 'Instant booking for immediate language help',
-    isFreeTrial: false,
-    studentName: '',
-    time: ''
+    isFreeTrial: false
+  },
+];
+
+const activeMeetings: ActiveMeeting[] = [
+  {
+    id: 'meeting1',
+    teacherId: 'teacher1',
+    description: 'One-on-one English lesson',
+    startTime: new Date(),
+    callId: 'call1',
+  },
+  {
+    id: 'meeting2',
+    teacherId: 'teacher2',
+    description: 'Group conversation practice',
+    startTime: new Date(Date.now() - 30 * 60000), // 30 minutes ago
+    callId: 'call2',
+  },
+];
+
+const teacherStats = [
+  {
+    teacherId: 'teacher1',
+    totalStudents: 10,
+    totalLessons: 50,
+    totalEarnings: 875.00
+  },
+  {
+    teacherId: 'teacher2',
+    totalStudents: 8,
+    totalLessons: 40,
+    totalEarnings: 700.00
   },
 ];
 
 async function clearAllData(): Promise<void> {
-  const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings'];
+  const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings', 'activeMeetings', 'teacherStats'];
   for (const collectionName of collections) {
     const collectionRef = db.collection(collectionName);
     const snapshot = await collectionRef.get();
@@ -189,6 +221,20 @@ async function populateBookings(): Promise<void> {
   }
 }
 
+async function populateActiveMeetings(): Promise<void> {
+  for (const meeting of activeMeetings) {
+    await db.collection('activeMeetings').doc(meeting.id).set(meeting);
+    console.log(`Active meeting ${meeting.id} added successfully.`);
+  }
+}
+
+async function populateTeacherStats(): Promise<void> {
+  for (const stats of teacherStats) {
+    await db.collection('teacherStats').doc(stats.teacherId).set(stats);
+    console.log(`Teacher stats for ${stats.teacherId} added successfully.`);
+  }
+}
+
 export async function setupDatabase(): Promise<void> {
   try {
     console.log('Clearing old data...');
@@ -205,6 +251,12 @@ export async function setupDatabase(): Promise<void> {
 
     console.log('Populating bookings...');
     await populateBookings();
+
+    console.log('Populating active meetings...');
+    await populateActiveMeetings();
+
+    console.log('Populating teacher stats...');
+    await populateTeacherStats();
 
     console.log('Database setup completed successfully');
   } catch (error) {

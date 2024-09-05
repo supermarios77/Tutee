@@ -55,7 +55,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'teacher' | 'admin';
   subscriptionPlanId?: string;
   subscriptionStatus?: 'active' | 'inactive';
   createdAt: string;
@@ -66,4 +66,12 @@ export interface User {
 export interface UserBookingInfo {
   hasClaimedFreeTrial: boolean;
   bookings: Booking[];
+}
+
+export interface ActiveMeeting {
+  id: string;
+  teacherId: string;
+  description: string;
+  startTime: Date;
+  callId: string;
 }

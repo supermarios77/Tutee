@@ -2,35 +2,130 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, deleteDoc, doc, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Booking } from '@/types/booking';
+import { Booking, User } from '@/types/booking';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalendarDays, Clock, BookOpen, UserCircle2, Users, DollarSign, ChevronRight, Video } from 'lucide-react';
+import { CalendarDays, Clock, BookOpen, Users, DollarSign, ChevronRight, X, Plus, Settings, HelpCircle, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useStreamVideoClient, Call } from '@stream-io/video-react-sdk';
+import { useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
-import { Textarea } from "@/components/ui/textarea"
-import ReactDatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import MeetingTypeList from '@/components/Meeting/MeetingTypeList';
+
+interface ActiveMeeting {
+  id: string;
+  description: string;
+  startTime: Date;
+  callId: string;
+}
+
+interface ToastProps {
+  title: string;
+  description?: string;
+  variant?: 'default' | 'destructive';
+}
+
+interface Activity {
+  id: string;
+  type: 'lesson_completed' | 'meeting_created' | 'student_joined';
+  description: string;
+  timestamp: Date;
+}
+
+function CustomDatePicker({ selectedDate, onDateChange, upcomingLessons }: { selectedDate: Date; onDateChange: (date: Date) => void; upcomingLessons: Booking[] }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const previousMonthDays = Array.from({ length: firstDayOfMonth }, (_, i) => i + 1);
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const isToday = (day: number) => {
+    const today = new Date();
+    return day === today.getDate() && 
+           currentMonth.getMonth() === today.getMonth() && 
+           currentMonth.getFullYear() === today.getFullYear();
+  };
+
+  const hasLesson = (day: number) => {
+    return upcomingLessons.some(lesson => {
+      const lessonDate = new Date(lesson.date.seconds * 1000);
+      return lessonDate.getDate() === day && 
+             lessonDate.getMonth() === currentMonth.getMonth() && 
+             lessonDate.getFullYear() === currentMonth.getFullYear();
+    });
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="flex justify-between items-center mb-4">
+        <button onClick={goToPreviousMonth} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <h2 className="text-lg font-semibold">
+          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </h2>
+        <button onClick={goToNextMonth} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-2 text-center">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          <div key={day} className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+            {day}
+          </div>
+        ))}
+        {previousMonthDays.map((_, index) => (
+          <div key={`prev-${index}`} className="text-gray-300 dark:text-gray-600">
+            {new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, daysInMonth - firstDayOfMonth + index + 1).getDate()}
+          </div>
+        ))}
+        {days.map((day) => (
+          <button
+            key={day}
+            onClick={() => onDateChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))}
+            className={`p-2 rounded-full ${
+              isToday(day) ? 'bg-blue-500 text-white' : 
+              hasLesson(day) ? 'bg-green-200 dark:bg-green-700' : 
+              'hover:bg-gray-200 dark:hover:bg-gray-700'
+            } ${
+              selectedDate.getDate() === day && 
+              selectedDate.getMonth() === currentMonth.getMonth() && 
+              selectedDate.getFullYear() === currentMonth.getFullYear() 
+                ? 'ring-2 ring-blue-500' 
+                : ''
+            }`}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function TeacherHome() {
   const { user } = useUser();
   const [upcomingLessons, setUpcomingLessons] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ totalStudents: 0, totalLessons: 0, totalEarnings: 0 });
-  const [meetingState, setMeetingState] = useState<'isInstantMeeting' | 'isScheduleMeeting' | undefined>(undefined);
-  const [values, setValues] = useState({
-    dateTime: new Date(),
-    description: '',
-  });
-  const [callDetail, setCallDetail] = useState<Call>();
+  const [activeMeetings, setActiveMeetings] = useState<ActiveMeeting[]>([]);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const client = useStreamVideoClient();
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast } = useToast<ToastProps>();
 
   useEffect(() => {
     const fetchTeacherData = async () => {
@@ -41,7 +136,7 @@ export default function TeacherHome() {
         const now = Timestamp.now();
         const bookingsRef = collection(db, 'bookings');
         const q = query(
-          bookingsRef, 
+          bookingsRef,
           where('teacherId', '==', user.id),
           where('date', '>=', now),
           where('status', '==', 'scheduled')
@@ -65,6 +160,34 @@ export default function TeacherHome() {
             totalEarnings: teacherStats.totalEarnings || 0
           });
         }
+
+        // Fetch active meetings
+        const activeMeetingsRef = collection(db, 'meetings');
+        const activeMeetingsQuery = query(activeMeetingsRef, where('teacherId', '==', user.id));
+        const activeMeetingsSnapshot = await getDocs(activeMeetingsQuery);
+        const activeMeetingsData = activeMeetingsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          description: doc.data().description,
+          startTime: doc.data().startTime.toDate(),
+          callId: doc.data().callId,
+        }));
+        setActiveMeetings(activeMeetingsData);
+
+        // Fetch recent activities
+        const activitiesRef = collection(db, 'teacherActivities');
+        const activitiesQuery = query(
+          activitiesRef, 
+          where('teacherId', '==', user.id),
+          orderBy('timestamp', 'desc'),
+          limit(5)
+        );
+        const activitiesSnapshot = await getDocs(activitiesQuery);
+        const activitiesData = activitiesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as Activity));
+        setRecentActivities(activitiesData);
+
       } catch (error) {
         console.error('Error fetching teacher data:', error);
       } finally {
@@ -75,37 +198,40 @@ export default function TeacherHome() {
     fetchTeacherData();
   }, [user]);
 
-  const createMeeting = async (isInstant: boolean) => {
+  const endMeeting = async (meetingId: string) => {
     if (!client || !user) return;
     try {
-      if (!isInstant && !values.dateTime) {
-        toast({ title: 'Please select a date and time' });
-        return;
+      const meetingToEnd = activeMeetings.find(m => m.id === meetingId);
+      if (meetingToEnd) {
+        try {
+          const call = client.call('default', meetingToEnd.callId);
+          await call.endCall();
+        } catch (streamError) {
+          console.error('Error ending call in Stream:', streamError);
+        }
       }
-      const id = crypto.randomUUID();
-      const call = client.call('default', id);
-      if (!call) throw new Error('Failed to create meeting');
-      const startsAt = isInstant ? new Date().toISOString() : values.dateTime.toISOString();
-      const description = isInstant ? 'Instant Meeting' : values.description || 'Scheduled Meeting';
-      await call.getOrCreate({
-        data: {
-          starts_at: startsAt,
-          custom: {
-            description,
-          },
-        },
-      });
-      setCallDetail(call);
-      if (isInstant) {
-        router.push(`/meeting/${call.id}`);
-      }
+
+      await deleteDoc(doc(db, 'meetings', meetingId));
+      setActiveMeetings(prevMeetings => prevMeetings.filter(m => m.id !== meetingId));
+
       toast({
-        title: 'Meeting Created',
-        description: isInstant ? 'Joining the meeting now.' : 'Meeting scheduled successfully.',
+        title: 'Meeting Ended',
+        description: 'The meeting has been removed from your active meetings.',
       });
     } catch (error) {
-      console.error(error);
-      toast({ title: 'Failed to create Meeting' });
+      console.error('Error ending meeting:', error);
+      toast({ 
+        title: 'Error Ending Meeting', 
+        description: 'The meeting could not be ended. It has been removed from your active meetings.',
+        variant: 'destructive'
+      });
+      
+      try {
+        await deleteDoc(doc(db, 'meetings', meetingId));
+        setActiveMeetings(prevMeetings => prevMeetings.filter(m => m.id !== meetingId));
+      } catch (deleteError) {
+        console.error('Error removing meeting from database:', deleteError);
+      }
     }
   };
 
@@ -117,7 +243,7 @@ export default function TeacherHome() {
   const date = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
 
   return (
-    <div className="flex flex-col min-h-screen p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       <Card className="w-full bg-gradient-to-r from-blue-600 to-purple-600 border-none shadow-lg">
         <CardContent className="p-6">
           <h1 className="text-4xl font-bold text-white">{time}</h1>
@@ -131,107 +257,109 @@ export default function TeacherHome() {
         ))}
       </div>
 
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="bg-card text-card-foreground transition-colors duration-300">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Upcoming Lessons</CardTitle>
+            <Link href="/teacher/lessons" className="text-sm text-blue-500 hover:text-blue-700 flex items-center">
+              View all <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : upcomingLessons.length > 0 ? (
+              <ul className="space-y-2">
+                {upcomingLessons.slice(0, 3).map((lesson) => (
+                  <LessonItem key={lesson.id} lesson={lesson} />
+                ))}
+              </ul>
+            ) : (
+              <p>No upcoming lessons scheduled.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card text-card-foreground transition-colors duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Calendar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomDatePicker
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              upcomingLessons={upcomingLessons}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <MeetingTypeList />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="bg-card text-card-foreground transition-colors duration-300">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Active Meetings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : activeMeetings.length > 0 ? (
+              <ul className="space-y-2">
+                {activeMeetings.map((meeting) => (
+                  <ActiveMeetingItem key={meeting.id} meeting={meeting} onEndMeeting={endMeeting} />
+                ))}
+              </ul>
+            ) : (
+              <p>No active meetings.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card text-card-foreground transition-colors duration-300">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <Button variant="outline" onClick={() => router.push('/teacher/create-lesson')}>
+                <Plus className="h-4 w-4 mr-2" /> Create Lesson
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/teacher/students')}>
+                <Users className="h-4 w-4 mr-2" /> Manage Students
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/teacher/settings')}>
+                <Settings className="h-4 w-4 mr-2" /> Settings
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/teacher/support')}>
+                <HelpCircle className="h-4 w-4 mr-2" /> Get Support
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="bg-card text-card-foreground transition-colors duration-300">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Upcoming Lessons</CardTitle>
-          <Link href="/teacher/lessons" className="text-sm text-blue-500 hover:text-blue-700 flex items-center">
-            View all <ChevronRight className="h-4 w-4 ml-1" />
-          </Link>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <p>Loading...</p>
-          ) : upcomingLessons.length > 0 ? (
+          ) : recentActivities.length > 0 ? (
             <ul className="space-y-2">
-              {upcomingLessons.slice(0, 3).map((lesson) => (
-                <LessonItem key={lesson.id} lesson={lesson} />
+              {recentActivities.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
               ))}
             </ul>
           ) : (
-            <p>No upcoming lessons scheduled.</p>
+            <p>No recent activity.</p>
           )}
         </CardContent>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <ActionCard
-          icon={Video}
-          title="Start Instant Meeting"
-          description="Begin an immediate video session"
-          bgColor="bg-blue-600"
-          hoverColor="bg-blue-700"
-          onClick={() => createMeeting(true)}
-        />
-        <ActionCard
-          icon={CalendarDays}
-          title="Schedule Meeting"
-          description="Plan your next video session"
-          bgColor="bg-purple-600"
-          hoverColor="bg-purple-700"
-          onClick={() => setMeetingState('isScheduleMeeting')}
-        />
-        <ActionCard
-          href="/teacher/history"
-          icon={Clock}
-          title="Lesson History"
-          description="View past lessons and earnings"
-          bgColor="bg-green-600"
-          hoverColor="bg-green-700"
-        />
-      </div>
-
-      {meetingState === 'isScheduleMeeting' && (
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle>Schedule Meeting</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Description</label>
-              <Textarea
-                placeholder="Meeting description"
-                value={values.description}
-                onChange={(e) => setValues({ ...values, description: e.target.value })}
-                className="min-h-[100px]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Date and Time</label>
-              <ReactDatePicker
-                selected={values.dateTime}
-                onChange={(date) => setValues({ ...values, dateTime: date! })}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                timeCaption="time"
-                dateFormat="MMMM d, yyyy h:mm aa"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <Button onClick={() => createMeeting(false)}>Schedule Meeting</Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {callDetail && !meetingState && (
-        <Card className="p-6 text-center">
-          <CardHeader>
-            <CardTitle>Meeting Created</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Your meeting has been created successfully.</p>
-            <Button 
-              className="mt-4"
-              onClick={() => {
-                navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetail.id}`);
-                toast({ title: 'Meeting link copied to clipboard' });
-              }}
-            >
-              Copy Meeting Link
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
@@ -265,20 +393,21 @@ const LessonItem = ({ lesson }: { lesson: Booking }) => (
   </li>
 );
 
-const ActionCard = ({ href, icon: Icon, title, description, bgColor, hoverColor, onClick }: { href?: string; icon: any; title: string; description: string; bgColor: string; hoverColor: string; onClick?: () => void }) => {
-  const content = (
-    <Card className={`${bgColor} hover:${hoverColor} transition-colors border-none shadow-lg h-full cursor-pointer`}>
-      <CardContent className="flex flex-col items-center justify-center p-6 h-full">
-        <Icon className="h-12 w-12 mb-2 text-white" />
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="text-sm text-center text-gray-100">{description}</p>
-      </CardContent>
-    </Card>
-  );
+const ActiveMeetingItem = ({ meeting, onEndMeeting }: { meeting: ActiveMeeting; onEndMeeting: (id: string) => void }) => (
+  <li className="bg-muted p-3 rounded-lg transition-colors duration-300 hover:bg-accent flex justify-between items-center">
+    <div>
+      <p className="font-semibold">{meeting.description}</p>
+      <p className="text-sm text-muted-foreground">Started: {meeting.startTime.toLocaleString()}</p>
+    </div>
+    <Button variant="destructive" size="sm" onClick={() => onEndMeeting(meeting.id)}>
+      <X className="h-4 w-4 mr-1" /> End Meeting
+    </Button>
+  </li>
+);
 
-  if (href) {
-    return <Link href={href}>{content}</Link>;
-  }
-
-  return <div onClick={onClick}>{content}</div>;
-};
+const ActivityItem = ({ activity }: { activity: Activity }) => (
+  <li className="bg-muted p-3 rounded-lg transition-colors duration-300 hover:bg-accent">
+    <p className="font-semibold">{activity.description}</p>
+    <p className="text-sm text-muted-foreground">{activity.timestamp.toLocaleString()}</p>
+  </li>
+);
