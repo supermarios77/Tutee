@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalendarDays, Clock, BookOpen, UserCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function Home() {
+export default function Component() {
   const { user } = useUser();
   const [upcomingLessons, setUpcomingLessons] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +32,8 @@ export default function Home() {
         const querySnapshot = await getDocs(q);
         const lessons = querySnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
+          time: doc.data().startTime
         } as Booking));
 
         setUpcomingLessons(lessons);

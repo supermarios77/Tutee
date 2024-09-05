@@ -42,6 +42,7 @@ export interface Booking {
   date: string;
   startTime: string;
   endTime: string;
+  time: string; // Add this line
   lessonType: 'individual' | 'group' | 'instant';
   status: 'scheduled' | 'completed' | 'cancelled';
   subscriptionPlanId: string;
