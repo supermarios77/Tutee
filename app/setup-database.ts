@@ -112,6 +112,8 @@ const bookings: Booking[] = [
     status: 'scheduled',
     notes: 'Focus on business English',
     isFreeTrial: false,
+    studentName: '',
+    time: ''
   },
   {
     id: 'booking2',
@@ -125,6 +127,8 @@ const bookings: Booking[] = [
     status: 'scheduled',
     notes: 'Conversation practice',
     isFreeTrial: false,
+    studentName: '',
+    time: ''
   },
   {
     id: 'booking3',
@@ -133,11 +137,13 @@ const bookings: Booking[] = [
     subscriptionPlanId: 'one-to-one-sessions',
     date: new Date().toISOString().split('T')[0],
     startTime: new Date().toTimeString().split(' ')[0].slice(0, 5),
-    endTime: new Date(Date.now() + 30*60000).toTimeString().split(' ')[0].slice(0, 5),
+    endTime: new Date(Date.now() + 30 * 60000).toTimeString().split(' ')[0].slice(0, 5),
     lessonType: 'instant',
     status: 'scheduled',
     notes: 'Instant booking for immediate language help',
     isFreeTrial: false,
+    studentName: '',
+    time: ''
   },
 ];
 

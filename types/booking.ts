@@ -39,10 +39,11 @@ export interface Booking {
   id: string;
   teacherId: string;
   studentId: string;
+  studentName: string; // Add this line
   date: string;
   startTime: string;
   endTime: string;
-  time: string; // Add this line
+  time: string;
   lessonType: 'individual' | 'group' | 'instant';
   status: 'scheduled' | 'completed' | 'cancelled';
   subscriptionPlanId: string;
