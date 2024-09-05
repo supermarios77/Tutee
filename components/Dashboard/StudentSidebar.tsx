@@ -1,114 +1,129 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ChevronRight, Menu, Settings, LogOut } from 'lucide-react';
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
-import { Home, Calendar, BookOpen, Clock, UserCircle2, Menu, ChevronRight } from 'lucide-react';
 
+import { sidebarLinks } from '@/constants';
+import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-const sidebarLinks = [
-  { icon: Home, route: '/student-dashboard', label: 'Home' },
-  { icon: Calendar, route: '/student-dashboard/upcoming', label: 'Upcoming Lessons' },
-  { icon: BookOpen, route: '/booking', label: 'Book Lesson' },
-  { icon: Clock, route: '/student-dashboard/previous', label: 'Previous Lessons' },
-  { icon: UserCircle2, route: '/join-meeting', label: 'Join Meeting' },
-];
-
-export default function StudentSidebar() {
+function SidebarContent({ isMobile = false, isExpanded = true, onLinkClick = () => {} }) {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
+
+  const memoizedLinks = useMemo(() => sidebarLinks.map((item) => {
+    const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`);
+    
+    return (
+      <TooltipProvider key={item.label}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href={item.route}
+              className={cn(
+                'flex items-center p-4 rounded-lg transition-colors',
+                isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                isExpanded ? 'justify-start' : 'justify-center'
+              )}
+              onClick={onLinkClick}
+            >
+              <Image
+                src={item.imgURL}
+                alt={item.label}
+                width={24}
+                height={24}
+              />
+              {(isExpanded || isMobile) && (
+                <p className="text-lg font-semibold ml-4">
+                  {item.label}
+                </p>
+              )}
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right" className={isExpanded ? 'hidden' : ''}>
+            {item.label}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }), [pathname, isExpanded, isMobile, onLinkClick]);
+
+  return (
+    <div className="flex flex-1 flex-col gap-6">
+      {memoizedLinks}
+    </div>
+  );
+}
+
+function UserProfile({ isExpanded }: { isExpanded: boolean }) {
   const { user } = useUser();
 
-  const SidebarContent = ({ isMobile = false }) => (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="hidden md:flex"
-          >
-            <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </Button>
+  return (
+    <SignedIn>
+      <div className={cn(
+        "flex items-center gap-4 p-4",
+        isExpanded ? "justify-start" : "justify-center"
+      )}>
+        <UserButton
+          afterSignOutUrl="/sign-in"
+          appearance={{
+            elements: {
+              avatarBox: "h-10 w-10"
+            }
+          }}
+        />
+        {isExpanded && user && (
+          <div className="flex flex-col">
+            <p className="text-sm font-medium">{user.fullName || 'User'}</p>
+            <p className="text-xs text-muted-foreground">{user.primaryEmailAddress?.emailAddress || ''}</p>
+          </div>
         )}
       </div>
-      <nav className="space-y-1">
-        {sidebarLinks.map((item) => {
-          const isActive = pathname === item.route;
-          return (
-            <TooltipProvider key={item.label}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={item.route}
-                    className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                    onClick={() => isMobile && setIsMobileMenuOpen(false)}
-                  >
-                    <item.icon className={`h-5 w-5 ${isExpanded ? 'mr-3' : 'mx-auto'}`} />
-                    {(isExpanded || isMobile) && <span>{item.label}</span>}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className={isExpanded ? 'hidden' : ''}>
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          );
-        })}
-      </nav>
-      <div className="mt-auto pt-4">
-        <SignedIn>
-          <div className={`flex items-center gap-3 rounded-lg bg-muted p-3 ${isExpanded ? '' : 'justify-center'}`}>
-            <UserButton
-              afterSignOutUrl="/sign-in"
-              appearance={{
-                elements: {
-                  avatarBox: "h-10 w-10"
-                }
-              }}
-            />
-            {(isExpanded || isMobile) && (
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{user?.fullName || 'Student'}</span>
-                <span className="text-xs text-muted-foreground">Manage Account</span>
-              </div>
-            )}
-          </div>
-        </SignedIn>
-      </div>
-    </>
+    </SignedIn>
   );
+}
+
+export default function Sidebar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <>
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden fixed top-4 left-4 z-50">
+          <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 sm:hidden" aria-label="Open menu">
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[280px] p-0">
-          <div className="flex flex-col h-full p-6">
-            <SidebarContent isMobile={true} />
-          </div>
+          <nav className="flex flex-col h-full p-6 pt-28">
+            <SidebarContent isMobile={true} onLinkClick={() => setIsMobileMenuOpen(false)} />
+            <UserProfile isExpanded={true} />
+          </nav>
         </SheetContent>
       </Sheet>
 
-      <aside className={`hidden md:flex flex-col h-screen bg-background border-r transition-all duration-300 ${isExpanded ? 'w-64' : 'w-[70px]'}`}>
-        <div className="flex flex-col h-full p-4">
-          <SidebarContent />
-        </div>
-      </aside>
+      <section className={cn(
+        "sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-28 max-sm:hidden",
+        isExpanded ? "w-[264px]" : "w-[88px]"
+      )}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="absolute top-4 right-4"
+          aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+        >
+          <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+        </Button>
+        <SidebarContent isExpanded={isExpanded} />
+        <UserProfile isExpanded={isExpanded} />
+      </section>
     </>
   );
 }
