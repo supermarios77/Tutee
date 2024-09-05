@@ -20,7 +20,6 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       appearance={{
         layout: {
           socialButtonsVariant: 'iconButton',
-          logoImageUrl: '/assets/icons/yoom-logo.svg',
         },
       }}
     >

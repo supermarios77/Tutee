@@ -4,10 +4,13 @@ import { SignIn } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { BookOpenIcon, GlobeIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function SignInPage() {
+  const [error, setError] = useState<string | null>(null)
+
   return (
-    <main className="min-h-screen w-full bg-hero-gradient flex items-center justify-center p-4">
+    <main className="min-h-screen w-full bg-hero-gradient flex items-center justify-center p-4" aria-labelledby="signin-title">
       <div className="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left side: Animated background and content */}
@@ -17,7 +20,7 @@ export default function SignInPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl font-bold mb-4">Welcome Back to Tutee</h1>
+            <h1 id="signin-title" className="text-3xl font-bold mb-4">Welcome Back to Tutee</h1>
             <p className="text-lg mb-6 text-center">
               Continue your journey to English fluency!
             </p>
@@ -26,22 +29,24 @@ export default function SignInPage() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="bg-blue-500 rounded-full p-3"
+                aria-label="Rotating book icon"
               >
-                <BookOpenIcon size={40} />
+                <BookOpenIcon size={40} aria-hidden="true" />
               </motion.div>
               <motion.div
                 animate={{ rotate: -360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="bg-blue-500 rounded-full p-3"
+                aria-label="Rotating globe icon"
               >
-                <GlobeIcon size={40} />
+                <GlobeIcon size={40} aria-hidden="true" />
               </motion.div>
             </div>
           </motion.div>
 
           {/* Right side: Sign In form */}
           <motion.div 
-            className="md:w-1/2 p-8"
+            className="md:w-1/2 p-8 relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -55,7 +60,15 @@ export default function SignInPage() {
                   card: 'bg-transparent shadow-none',
                 },
               }}
+              redirectUrl="/dashboard"
+              afterSignInUrl="/dashboard"
+              signUpUrl="/sign-up"
             />
+            {error && (
+              <p className="mt-4 text-center text-sm text-red-600 dark:text-red-400" role="alert">
+                {error}
+              </p>
+            )}
             <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
               <Link href="/sign-up" className="text-blue-600 hover:underline">
