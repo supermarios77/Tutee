@@ -39,13 +39,13 @@ export interface Booking {
   id: string;
   teacherId: string;
   studentId: string;
-  studentName: string; // Add this line
+  studentName: string;
   date: string;
   startTime: string;
   endTime: string;
   time: string;
   lessonType: 'individual' | 'group' | 'instant';
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'paid';
   subscriptionPlanId: string;
   isFreeTrial: boolean;
   notes: string;
@@ -61,6 +61,8 @@ export interface User {
   createdAt: string;
   lastLoginAt: string;
   hasClaimedFreeTrial: boolean;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 }
 
 export interface UserBookingInfo {
@@ -74,4 +76,9 @@ export interface ActiveMeeting {
   description: string;
   startTime: Date;
   callId: string;
+}
+
+export interface TimeSlot {
+  start: Date;
+  end: Date;
 }

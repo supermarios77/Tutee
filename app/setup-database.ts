@@ -1,9 +1,8 @@
-// app/setup-database.ts
-
 import { getFirestore } from 'firebase-admin/firestore';
-import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting } from '@/types/booking';
+import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting, TimeSlot } from '@/types/booking';
 import { adminDb } from '@/lib/firebase-admin';
 import Stripe from 'stripe';
+import { addDays, format, setHours, setMinutes, startOfDay } from 'date-fns';
 
 const db = adminDb;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
@@ -173,7 +172,7 @@ const teacherStats = [
 ];
 
 async function clearAllData(): Promise<void> {
-  const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings', 'activeMeetings', 'teacherStats'];
+  const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings', 'activeMeetings', 'teacherStats', 'availableSlots'];
   for (const collectionName of collections) {
     const collectionRef = db.collection(collectionName);
     const snapshot = await collectionRef.get();
@@ -258,6 +257,45 @@ async function populateTeacherStats(): Promise<void> {
   }
 }
 
+async function createAvailableSlots(): Promise<void> {
+  const startDate = startOfDay(new Date()); // Today
+  const endDate = addDays(startDate, 30); // Create slots for the next 30 days
+
+  for (const teacher of teachers) {
+    let currentDate = startDate;
+    const availableSlots: TimeSlot[] = [];
+
+    while (currentDate <= endDate) {
+      const dayOfWeek = format(currentDate, 'EEEE').toLowerCase();
+      const teacherAvailability = teacher.availability[dayOfWeek as keyof typeof teacher.availability];
+
+      if (teacherAvailability) {
+        const [startHour, startMinute] = teacherAvailability.start.split(':').map(Number);
+        const [endHour, endMinute] = teacherAvailability.end.split(':').map(Number);
+
+        let slotStart = setMinutes(setHours(currentDate, startHour), startMinute);
+        const slotEnd = setMinutes(setHours(currentDate, endHour), endMinute);
+
+        while (slotStart < slotEnd) {
+          const slotEndTime = new Date(slotStart.getTime() + 60 * 60 * 1000); // Add 1 hour
+          availableSlots.push({
+            start: slotStart,
+            end: slotEndTime,
+          });
+          slotStart = new Date(slotEndTime);
+        }
+      }
+
+      currentDate = addDays(currentDate, 1);
+    }
+
+    await db.collection('availableSlots').doc(teacher.id).set({
+      slots: availableSlots
+    });
+    console.log(`Created ${availableSlots.length} available slots for teacher ${teacher.name}`);
+  }
+}
+
 export async function setupDatabase(): Promise<void> {
   try {
     console.log('Clearing old data...');
@@ -280,6 +318,9 @@ export async function setupDatabase(): Promise<void> {
 
     console.log('Populating teacher stats...');
     await populateTeacherStats();
+
+    console.log('Creating available slots for teachers...');
+    await createAvailableSlots();
 
     console.log('Database setup completed successfully');
   } catch (error) {

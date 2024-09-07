@@ -1,5 +1,13 @@
-import { Users, User, CalendarIcon, Clock } from 'lucide-react';
-import { SubscriptionPlan, BookingStep } from '../types/booking';
+import { User, Clock, Calendar, CreditCard } from 'lucide-react';
+import { BookingStep, SubscriptionPlan } from '@/types/booking';
+
+export const bookingSteps: BookingStep[] = [
+  { title: 'Select Plan', icon: User },
+  { title: 'Choose Teacher', icon: User },
+  { title: 'Select Dates', icon: Calendar },
+  { title: 'Choose Times', icon: Clock },
+  { title: 'Payment', icon: CreditCard },
+];
 
 export const subscriptionPlans: SubscriptionPlan[] = [
   {
@@ -36,12 +44,4 @@ export const subscriptionPlans: SubscriptionPlan[] = [
     sessionsPerWeek: 1,
     minutesPerSession: 60
   }
-];
-
-export const bookingSteps: BookingStep[] = [
-  { title: 'Select Plan', icon: Users },
-  { title: 'Select Teacher', icon: User },
-  { title: 'Choose Dates', icon: CalendarIcon },
-  { title: 'Select Times', icon: Clock },
-  { title: 'Payment', icon: Clock },
 ];

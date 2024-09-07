@@ -1,53 +1,27 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Lock, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CreditCard, Lock } from 'lucide-react';
 
 interface PaymentFormProps {
+  clientSecret: string;
+  onSuccess: () => void;
   amount: number;
   currency: string;
-  onSuccess: () => void;
 }
 
-export const PaymentForm: React.FC<PaymentFormProps> = ({ amount, currency, onSuccess }) => {
+export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, amount, currency }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [stripeMode, setStripeMode] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchClientSecret = async () => {
-      try {
-        const response = await fetch('/api/create-payment-intent', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ amount, currency }),
-        });
-        const data = await response.json();
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setClientSecret(data.clientSecret);
-          setStripeMode(data.mode);
-        }
-      } catch (err) {
-        setError('Failed to initialize payment. Please try again.');
-      }
-    };
-
-    fetchClientSecret();
-  }, [amount, currency]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!stripe || !elements || !clientSecret) {
+    if (!stripe || !elements) {
       return;
     }
 
@@ -68,35 +42,21 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ amount, currency, onSu
     setProcessing(false);
   };
 
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (!clientSecret) {
-    return <div>Loading payment form...</div>;
-  }
-
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center justify-center text-2xl">
-          <CreditCard className="mr-2" />
+        <CardTitle className="flex items-center justify-center text-3xl">
+          <CreditCard className="mr-2 h-8 w-8" />
           Secure Payment
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent>
-          <div className="mb-4">
-            <label htmlFor="card-element" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div className="mb-6">
+            <label htmlFor="card-element" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Card Details
             </label>
-            <div className="border rounded-md p-3 bg-white dark:bg-gray-800">
+            <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
               <CardElement
                 id="card-element"
                 options={{
@@ -116,30 +76,33 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ amount, currency, onSu
               />
             </div>
           </div>
-          {stripeMode && (
-            <Alert className="mt-4">
-              <AlertTitle>Stripe Mode: {stripeMode}</AlertTitle>
-              <AlertDescription>
-                {stripeMode === 'test' ? 'Use test card number: 4242 4242 4242 4242' : 'Using live mode'}
-              </AlertDescription>
+          <div className="text-center mb-4">
+            <p className="text-2xl font-bold">
+              Total: {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount / 100)}
+            </p>
+          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
         </CardContent>
         <CardFooter>
-          <Button 
-            type="submit" 
-            disabled={!stripe || processing} 
-            className="w-full flex items-center justify-center"
+          <Button
+            type="submit"
+            disabled={!stripe || processing}
+            className="w-full flex items-center justify-center text-lg py-6"
           >
             {processing ? (
               <>
                 <span className="mr-2">Processing</span>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
               </>
             ) : (
               <>
-                <Lock className="mr-2 h-4 w-4" />
-                Pay {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount / 100)}
+                <Lock className="mr-2 h-6 w-6" />
+                Pay {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount / 100)}
               </>
             )}
           </Button>
