@@ -1,8 +1,12 @@
+// app/setup-database.ts
+
 import { getFirestore } from 'firebase-admin/firestore';
 import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting } from '@/types/booking';
 import { adminDb } from '@/lib/firebase-admin';
+import Stripe from 'stripe';
 
 const db = adminDb;
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
 
 const teachers: Teacher[] = [
   {
@@ -82,6 +86,8 @@ const users: User[] = [
     role: 'student',
     subscriptionPlanId: 'one-to-one-sessions',
     subscriptionStatus: 'active',
+    stripeCustomerId: '',
+    stripeSubscriptionId: '',
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
     hasClaimedFreeTrial: false
@@ -93,10 +99,12 @@ const users: User[] = [
     role: 'student',
     subscriptionPlanId: 'group-sessions',
     subscriptionStatus: 'active',
+    stripeCustomerId: '',
+    stripeSubscriptionId: '',
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
     hasClaimedFreeTrial: true
-  },
+  }
 ];
 
 const bookings: Booking[] = [
@@ -129,22 +137,7 @@ const bookings: Booking[] = [
     status: 'scheduled',
     notes: 'Conversation practice',
     isFreeTrial: false
-  },
-  {
-    id: 'booking3',
-    teacherId: 'teacher1',
-    studentId: 'user1',
-    studentName: 'John Doe',
-    subscriptionPlanId: 'one-to-one-sessions',
-    date: new Date().toISOString().split('T')[0],
-    startTime: new Date().toTimeString().split(' ')[0].slice(0, 5),
-    endTime: new Date(Date.now() + 30 * 60000).toTimeString().split(' ')[0].slice(0, 5),
-    time: `${new Date().toTimeString().split(' ')[0].slice(0, 5)} - ${new Date(Date.now() + 30 * 60000).toTimeString().split(' ')[0].slice(0, 5)}`,
-    lessonType: 'instant',
-    status: 'scheduled',
-    notes: 'Instant booking for immediate language help',
-    isFreeTrial: false
-  },
+  }
 ];
 
 const activeMeetings: ActiveMeeting[] = [
@@ -161,7 +154,7 @@ const activeMeetings: ActiveMeeting[] = [
     description: 'Group conversation practice',
     startTime: new Date(Date.now() - 30 * 60000), // 30 minutes ago
     callId: 'call2',
-  },
+  }
 ];
 
 const teacherStats = [
@@ -176,7 +169,7 @@ const teacherStats = [
     totalStudents: 8,
     totalLessons: 40,
     totalEarnings: 700.00
-  },
+  }
 ];
 
 async function clearAllData(): Promise<void> {
@@ -209,6 +202,36 @@ async function populateSubscriptionPlans(): Promise<void> {
 
 async function populateUsers(): Promise<void> {
   for (const user of users) {
+    // Create a Stripe customer for each user
+    const stripeCustomer = await stripe.customers.create({
+      email: user.email,
+      name: user.name,
+      metadata: {
+        firebaseUserId: user.id
+      }
+    });
+
+    user.stripeCustomerId = stripeCustomer.id;
+
+    // If the user has an active subscription, create it in Stripe
+    if (user.subscriptionStatus === 'active' && user.subscriptionPlanId) {
+      const stripePlan = await stripe.prices.create({
+        unit_amount: subscriptionPlans.find(plan => plan.id === user.subscriptionPlanId)!.price * 100,
+        currency: 'usd',
+        recurring: { interval: 'month' },
+        product_data: {
+          name: subscriptionPlans.find(plan => plan.id === user.subscriptionPlanId)!.name,
+        },
+      });
+
+      const subscription = await stripe.subscriptions.create({
+        customer: stripeCustomer.id,
+        items: [{ price: stripePlan.id }],
+      });
+
+      user.stripeSubscriptionId = subscription.id;
+    }
+
     await db.collection('users').doc(user.id).set(user);
     console.log(`User ${user.name} added successfully.`);
   }
