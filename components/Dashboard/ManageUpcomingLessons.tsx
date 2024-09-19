@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { collection, query, where, getDocs, orderBy, deleteDoc, doc, updateDoc, getDoc, DocumentData } from 'firebase/firestore'
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Pencil, Trash2 } from 'lucide-react'
 
 interface Lesson {
     id: string;
@@ -23,18 +24,13 @@ interface Lesson {
     studentName: string;
 }
 
-interface UserData extends DocumentData {
-    firstName?: string;
-    lastName?: string;
-}
-
 export default function ManageUpcomingLessons() {
     const { user } = useUser()
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const { toast } = useToast()
-    const [isRescheduling, setIsRescheduling] = useState(false)
-    const [rescheduleData, setRescheduleData] = useState({ lessonId: '', newDate: '', newStartTime: '', newEndTime: '' })
+    const [isEditing, setIsEditing] = useState(false)
+    const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
 
     useEffect(() => {
         if (user) {
@@ -55,22 +51,11 @@ export default function ManageUpcomingLessons() {
                 orderBy('startTime')
             )
             const querySnapshot = await getDocs(q)
-            const lessonPromises = querySnapshot.docs.map(async (docSnapshot) => {
-                const lessonData = docSnapshot.data()
-                // Fetch student name
-                const studentDocRef = doc(db, 'users', lessonData.studentId)
-                const studentDocSnapshot = await getDoc(studentDocRef)
-                const studentData = studentDocSnapshot.data() as UserData | undefined
-                const studentName = studentData 
-                    ? `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim() || 'Unknown Student'
-                    : 'Unknown Student'
-                return {
-                    id: docSnapshot.id,
-                    ...lessonData,
-                    studentName
-                } as Lesson
-            })
-            const fetchedLessons = await Promise.all(lessonPromises)
+            const fetchedLessons = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                studentName: doc.data().studentName || 'Unknown Student'
+            } as Lesson))
             setLessons(fetchedLessons)
         } catch (error) {
             console.error('Error fetching lessons:', error)
@@ -80,7 +65,7 @@ export default function ManageUpcomingLessons() {
         }
     }
 
-    const handleCancelLesson = async (lessonId: string) => {
+    const handleDeleteLesson = async (lessonId: string) => {
         try {
             await deleteDoc(doc(db, 'bookings', lessonId))
             setLessons(lessons.filter(lesson => lesson.id !== lessonId))
@@ -91,23 +76,30 @@ export default function ManageUpcomingLessons() {
         }
     }
 
-    const handleRescheduleLesson = async () => {
-        setIsRescheduling(true)
+    const handleEditLesson = (lesson: Lesson) => {
+        setEditingLesson(lesson)
+        setIsEditing(true)
+    }
+
+    const handleUpdateLesson = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!editingLesson) return
+
         try {
-            const { lessonId, newDate, newStartTime, newEndTime } = rescheduleData
-            await updateDoc(doc(db, 'bookings', lessonId), {
-                date: newDate,
-                startTime: newStartTime,
-                endTime: newEndTime
+            await updateDoc(doc(db, 'bookings', editingLesson.id), {
+                title: editingLesson.title,
+                date: editingLesson.date,
+                startTime: editingLesson.startTime,
+                endTime: editingLesson.endTime
             })
-            await fetchLessons() // Refetch lessons to update the list
-            toast({ title: "Success", description: "Lesson rescheduled successfully." })
-            setIsRescheduling(false)
-            setRescheduleData({ lessonId: '', newDate: '', newStartTime: '', newEndTime: '' })
+            setLessons(lessons.map(lesson => 
+                lesson.id === editingLesson.id ? editingLesson : lesson
+            ))
+            setIsEditing(false)
+            toast({ title: "Success", description: "Lesson updated successfully." })
         } catch (error) {
-            console.error('Error rescheduling lesson:', error)
-            toast({ title: "Error", description: "Failed to reschedule lesson. Please try again.", variant: "destructive" })
-            setIsRescheduling(false)
+            console.error('Error updating lesson:', error)
+            toast({ title: "Error", description: "Failed to update lesson. Please try again.", variant: "destructive" })
         }
     }
 
@@ -116,77 +108,86 @@ export default function ManageUpcomingLessons() {
     }
 
     return (
-        <Card>
+        <Card className="w-full">
             <CardHeader>
                 <CardTitle>Manage Upcoming Lessons</CardTitle>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-[300px]">
-                    {lessons.map((lesson) => (
-                        <div key={lesson.id} className="flex justify-between items-center mb-4 p-2 border rounded">
-                            <div>
-                                <p className="font-semibold">{lesson.title}</p>
-                                <p>{lesson.date} | {lesson.startTime} - {lesson.endTime}</p>
+                <ScrollArea className="h-[400px] w-full pr-4">
+                    {lessons.length > 0 ? (
+                        lessons.map((lesson) => (
+                            <div key={lesson.id} className="mb-4 p-4 border rounded-lg">
+                                <h3 className="text-lg font-semibold">{lesson.title}</h3>
+                                <p>Date: {lesson.date}</p>
+                                <p>Time: {lesson.startTime} - {lesson.endTime}</p>
                                 <p>Student: {lesson.studentName}</p>
+                                <div className="mt-2 flex space-x-2">
+                                    <Button variant="outline" size="sm" onClick={() => handleEditLesson(lesson)}>
+                                        <Pencil className="h-4 w-4 mr-2" /> Edit
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteLesson(lesson.id)}>
+                                        <Trash2 className="h-4 w-4 mr-2" /> Cancel
+                                    </Button>
+                                </div>
                             </div>
-                            <div>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" className="mr-2">Reschedule</Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Reschedule Lesson</DialogTitle>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="newDate" className="text-right">
-                                                    New Date
-                                                </Label>
-                                                <Input
-                                                    id="newDate"
-                                                    type="date"
-                                                    className="col-span-3"
-                                                    value={rescheduleData.newDate}
-                                                    onChange={(e) => setRescheduleData({...rescheduleData, lessonId: lesson.id, newDate: e.target.value})}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="newStartTime" className="text-right">
-                                                    New Start Time
-                                                </Label>
-                                                <Input
-                                                    id="newStartTime"
-                                                    type="time"
-                                                    className="col-span-3"
-                                                    value={rescheduleData.newStartTime}
-                                                    onChange={(e) => setRescheduleData({...rescheduleData, newStartTime: e.target.value})}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="newEndTime" className="text-right">
-                                                    New End Time
-                                                </Label>
-                                                <Input
-                                                    id="newEndTime"
-                                                    type="time"
-                                                    className="col-span-3"
-                                                    value={rescheduleData.newEndTime}
-                                                    onChange={(e) => setRescheduleData({...rescheduleData, newEndTime: e.target.value})}
-                                                />
-                                            </div>
-                                        </div>
-                                        <Button onClick={handleRescheduleLesson} disabled={isRescheduling}>
-                                            {isRescheduling ? 'Rescheduling...' : 'Reschedule'}
-                                        </Button>
-                                    </DialogContent>
-                                </Dialog>
-                                <Button variant="destructive" onClick={() => handleCancelLesson(lesson.id)}>Cancel</Button>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p>No upcoming lessons scheduled.</p>
+                    )}
                 </ScrollArea>
             </CardContent>
+
+            <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Lesson</DialogTitle>
+                    </DialogHeader>
+                    {editingLesson && (
+                        <form onSubmit={handleUpdateLesson} className="space-y-4">
+                            <div>
+                                <Label htmlFor="title">Title</Label>
+                                <Input
+                                    id="title"
+                                    value={editingLesson.title}
+                                    onChange={(e) => setEditingLesson({...editingLesson, title: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="date">Date</Label>
+                                <Input
+                                    id="date"
+                                    type="date"
+                                    value={editingLesson.date}
+                                    onChange={(e) => setEditingLesson({...editingLesson, date: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="startTime">Start Time</Label>
+                                <Input
+                                    id="startTime"
+                                    type="time"
+                                    value={editingLesson.startTime}
+                                    onChange={(e) => setEditingLesson({...editingLesson, startTime: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="endTime">End Time</Label>
+                                <Input
+                                    id="endTime"
+                                    type="time"
+                                    value={editingLesson.endTime}
+                                    onChange={(e) => setEditingLesson({...editingLesson, endTime: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <Button type="submit">Update Lesson</Button>
+                        </form>
+                    )}
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }

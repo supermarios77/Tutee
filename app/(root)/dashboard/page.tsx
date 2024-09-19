@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import CreateLessonModal from '@/components/Dashboard/CreateLessonModal'
+import ManageUpcomingLessons from '@/components/Dashboard/ManageUpcomingLessons'
 
 interface TeacherStats {
   totalStudents: number;
@@ -151,14 +152,14 @@ export default function TeacherDashboard() {
     if (!user) return
 
     const slotsRef = doc(db, 'availableSlots', user.id)
-    const isSlotAvailable = availableSlots.some(s => 
+    const isSlotAvailable = availableSlots.some(s =>
       isSameDay(s.start, slot.start) && s.start.getHours() === slot.start.getHours()
     )
 
     try {
       let updatedSlots: TimeSlot[]
       if (isSlotAvailable) {
-        updatedSlots = availableSlots.filter(s => 
+        updatedSlots = availableSlots.filter(s =>
           !(isSameDay(s.start, slot.start) && s.start.getHours() === slot.start.getHours())
         )
       } else {
@@ -241,6 +242,8 @@ export default function TeacherDashboard() {
             </Card>
           </div>
 
+          <ManageUpcomingLessons />
+
           <BookingSlotsCalendar
             availableSlots={availableSlots}
             currentWeek={currentWeek}
@@ -248,7 +251,7 @@ export default function TeacherDashboard() {
             handleSlotToggle={handleSlotToggle}
           />
 
-          <QuickActions 
+          <QuickActions
             openCreateLessonModal={() => setIsCreateLessonModalOpen(true)}
             router={router}
           />
@@ -337,7 +340,7 @@ const BookingSlotsCalendar: React.FC<BookingSlotsCalendarProps> = ({ availableSl
                     {Array.from({ length: 24 }, (_, hour) => {
                       const slotStart = new Date(day.setHours(hour, 0, 0, 0))
                       const slotEnd = new Date(day.setHours(hour + 1, 0, 0, 0))
-                      const isAvailable = availableSlots.some(s => 
+                      const isAvailable = availableSlots.some(s =>
                         isSameDay(s.start, slotStart) && s.start.getHours() === hour
                       )
                       return (
