@@ -1,33 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { StreamVideoClient } from '@stream-io/video-react-sdk'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
-import { addDoc, collection } from 'firebase/firestore'
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { User } from '@/types/booking'  // Add this import
 
 interface CreateLessonModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLessonCreated: () => void;
+  students: User[];
 }
 
-export default function CreateLessonModal({ isOpen, onClose, onLessonCreated }: CreateLessonModalProps) {
+export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, students }: CreateLessonModalProps) {
+  const { user } = useUser()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
-  const { user } = useUser()
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
+  const [selectedStudent, setSelectedStudent] = useState('')
   const { toast } = useToast()
+
+  // Remove the useEffect hook that fetches students
 
   const handleCreateLesson = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || !selectedStudent) return
 
     try {
       // Create a Stream Video call
@@ -51,11 +58,12 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated }: 
       // Add lesson to Firebase
       await addDoc(collection(db, 'bookings'), {
         teacherId: user.id,
+        studentId: selectedStudent,
         title,
         description,
         date,
-        startTime: time,
-        endTime: calculateEndTime(time),
+        startTime: startTime,
+        endTime: calculateEndTime(startTime),
         callId: call.id,
         status: 'scheduled'
       })
@@ -94,6 +102,18 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated }: 
             onChange={(e) => setDescription(e.target.value)}
             required
           />
+          <Select onValueChange={setSelectedStudent} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a student" />
+            </SelectTrigger>
+            <SelectContent>
+              {students.map((student) => (
+                <SelectItem key={student.id} value={student.id}>
+                  {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.username || 'Unnamed User'}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             type="date"
             value={date}
@@ -102,8 +122,8 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated }: 
           />
           <Input
             type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
             required
           />
           <Button type="submit" className="w-full">Create Lesson</Button>

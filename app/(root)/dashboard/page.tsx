@@ -47,6 +47,7 @@ export default function TeacherDashboard() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()))
   const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
+  const [students, setStudents] = useState<User[]>([])
 
   const fetchDashboardData = async () => {
     if (!user) return
@@ -115,8 +116,35 @@ export default function TeacherDashboard() {
     }
   }
 
+  const fetchStudents = async () => {
+    if (!user) return;
+
+    try {
+      const studentsRef = collection(db, 'users');
+      const studentsQuery = query(studentsRef, where('role', '==', 'user'));
+      const studentsSnapshot = await getDocs(studentsQuery);
+      const studentsData = studentsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          firstName: data.firstName || null,
+          lastName: data.lastName || null,
+          email: data.email || null,
+          role: data.role || 'user',
+          lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
+          hasClaimedFreeTrial: data.hasClaimedFreeTrial || false,
+        } as User;
+      });
+      setStudents(studentsData);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error("Failed to load students. Please try again.");
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData()
+    fetchStudents()
   }, [user])
 
   const handleSlotToggle = async (slot: TimeSlot) => {
@@ -229,6 +257,7 @@ export default function TeacherDashboard() {
             isOpen={isCreateLessonModalOpen}
             onClose={() => setIsCreateLessonModalOpen(false)}
             onLessonCreated={handleLessonCreated}
+            students={students}
           />
         </>
       )}

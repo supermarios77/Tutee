@@ -53,16 +53,12 @@ export interface Booking {
 
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  role: 'student' | 'teacher' | 'admin';
-  subscriptionPlanId?: string;
-  subscriptionStatus?: 'active' | 'inactive';
-  createdAt: string;
-  lastLoginAt: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  role: string;
+  lastLoginAt?: Date;
   hasClaimedFreeTrial: boolean;
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
 }
 
 export interface UserBookingInfo {
