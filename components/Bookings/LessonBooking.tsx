@@ -117,9 +117,14 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
         status: 'scheduled',
         subscriptionPlanId: selectedPlan.id,
         isFreeTrial: isNewUser && userBookingInfo && !userBookingInfo.hasClaimedFreeTrial && index === 0
-      } as Booking));
+      } as Omit<Booking, 'id'>));
 
       const bookingRef = await addDoc(collection(db, 'bookings'), { bookings });
+      const bookingsWithId = bookings.map((booking, index) => ({
+        ...booking,
+        id: `${bookingRef.id}_${index}`
+      } as Booking));
+
       setBookingId(bookingRef.id);
 
       await updateFirebaseAfterBooking(bookingRef.id, user.id, isNewUser);

@@ -12,10 +12,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { checkForConflicts } from '@/utils/bookingUtils'
 import { addDoc } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
+import { Teacher } from '@/types/booking'  // Add this import
 
 export default function BookLesson() {
   const { user } = useUser()
-  const [teachers, setTeachers] = useState([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
   const [selectedTeacher, setSelectedTeacher] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -31,7 +32,7 @@ export default function BookLesson() {
     const teachersRef = collection(db, 'users')
     const q = query(teachersRef, where('role', '==', 'teacher'))
     const querySnapshot = await getDocs(q)
-    setTeachers(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+    setTeachers(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher)))
   }
 
   const handleBookLesson = async (e: React.FormEvent) => {
@@ -79,14 +80,14 @@ export default function BookLesson() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleBookLesson} className="space-y-4">
-            <Select onValueChange={setSelectedTeacher} required>
+            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a teacher" />
               </SelectTrigger>
               <SelectContent>
                 {teachers.map((teacher) => (
                   <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.fullName || `${teacher.firstName} ${teacher.lastName}`.trim()}
+                    {teacher.firstName} {teacher.lastName}
                   </SelectItem>
                 ))}
               </SelectContent>

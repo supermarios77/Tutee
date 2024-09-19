@@ -13,6 +13,7 @@ export default function BookingPage() {
   const router = useRouter()
   const [isOnboarded, setIsOnboarded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [existingPlan, setExistingPlan] = useState(false)
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -29,6 +30,7 @@ export default function BookingPage() {
       const userData = userDoc.data()
       if (userData?.onboardingCompleted) {
         setIsOnboarded(true)
+        setExistingPlan(!!userData.subscriptionPlan) // Set existingPlan based on user data
       } else {
         router.push('/onboarding')
       }
@@ -61,7 +63,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-900 via-black to-purple-900">
-      <LessonBooking />
+      <LessonBooking existingPlan={existingPlan} />
     </div>
   )
 }

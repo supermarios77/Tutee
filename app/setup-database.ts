@@ -10,6 +10,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06
 const teachers: Teacher[] = [
   {
     id: 'teacher1',
+    firstName: 'Abby',
+    lastName: '',
     name: 'Abby',
     email: 'abby@tutee.co.uk',
     bio: 'Experienced English teacher specializing in conversation and business English.',
@@ -25,6 +27,8 @@ const teachers: Teacher[] = [
   },
   {
     id: 'teacher2',
+    firstName: 'Jane',
+    lastName: 'Smith',
     name: 'Jane Smith',
     email: 'jane@tutee.co.uk',
     bio: 'TEFL certified teacher with 5 years of experience in teaching English as a second language.',
@@ -80,6 +84,8 @@ const subscriptionPlans: SubscriptionPlan[] = [
 const users: User[] = [
   {
     id: 'user1',
+    firstName: 'John',
+    lastName: 'Doe',
     name: 'John Doe',
     email: 'john@example.com',
     role: 'student',
@@ -87,12 +93,13 @@ const users: User[] = [
     subscriptionStatus: 'active',
     stripeCustomerId: '',
     stripeSubscriptionId: '',
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
+    lastLoginAt: new Date(),
     hasClaimedFreeTrial: false
   },
   {
     id: 'user2',
+    firstName: 'Jane',
+    lastName: 'Doe',
     name: 'Jane Doe',
     email: 'jane@example.com',
     role: 'student',
@@ -100,8 +107,7 @@ const users: User[] = [
     subscriptionStatus: 'active',
     stripeCustomerId: '',
     stripeSubscriptionId: '',
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
+    lastLoginAt: new Date(),
     hasClaimedFreeTrial: true
   }
 ];
@@ -203,8 +209,8 @@ async function populateUsers(): Promise<void> {
   for (const user of users) {
     // Create a Stripe customer for each user
     const stripeCustomer = await stripe.customers.create({
-      email: user.email,
-      name: user.name,
+      email: user.email || undefined,
+      name: user.name || undefined,
       metadata: {
         firebaseUserId: user.id
       }

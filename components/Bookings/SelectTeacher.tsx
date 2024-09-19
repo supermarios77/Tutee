@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface Teacher {
-  id: string;
-  name: string;
-  // Add any additional fields from Firebase here
-}
+import { Teacher } from '@/types/booking';
 
 interface SelectTeacherProps {
   teachers: Teacher[];
@@ -19,14 +14,9 @@ export const SelectTeacher: React.FC<SelectTeacherProps> = ({ teachers, onSelect
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {teachers.map((teacher) => (
-        <div
-          key={teacher.id}
-          className="border rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition duration-300 ease-in-out"
-          onClick={() => onSelectTeacher(teacher.id)}
-        >
-          <h3 className="text-lg font-semibold">{teacher.name}</h3>
-          {/* Add any additional teacher information here */}
-        </div>
+        <option key={teacher.id} value={teacher.id}>
+          {teacher.firstName} {teacher.lastName}
+        </option>
       ))}
     </div>
   );
