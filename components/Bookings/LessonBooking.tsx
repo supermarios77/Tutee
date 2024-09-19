@@ -23,7 +23,11 @@ import { format, isSameDay } from 'date-fns';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-export default function LessonBooking() {
+interface LessonBookingProps {
+  existingPlan: boolean;
+}
+
+export default function LessonBooking({ existingPlan }: LessonBookingProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | undefined>(undefined);
   const [selectedTeacher, setSelectedTeacher] = useState<string | undefined>(undefined);
@@ -206,22 +210,25 @@ export default function LessonBooking() {
     return <div>Loading...</div>;
   }
 
+  const steps = existingPlan 
+    ? ['Select Date', 'Select Time', 'Confirm Booking']
+    : ['Select Plan', 'Select Teacher', 'Select Date', 'Select Time', 'Payment', 'Confirmation'];
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-6">Book Your Lesson</h1>
 
       <div className="flex justify-between mb-6">
-        {bookingSteps.map((step, index) => (
+        {steps.map((step, index) => (
           <div key={index} className={`flex items-center ${index <= currentStep ? 'text-blue-600' : 'text-gray-400'}`}>
-            <step.icon className="mr-2" />
-            <span>{step.title}</span>
+            <span>{step}</span>
           </div>
         ))}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{bookingSteps[currentStep].title}</CardTitle>
+          <CardTitle>{steps[currentStep]}</CardTitle>
         </CardHeader>
         <CardContent>
           <AnimatePresence mode="wait">
@@ -232,7 +239,7 @@ export default function LessonBooking() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {currentStep === 0 && (
+              {currentStep === 0 && !existingPlan && (
                 <SelectPlan
                   plans={subscriptionPlans}
                   selectedPlan={selectedPlan}
@@ -242,20 +249,20 @@ export default function LessonBooking() {
                   userBookingInfo={userBookingInfo ? { hasClaimedFreeTrial: userBookingInfo.hasClaimedFreeTrial } : undefined}
                 />
               )}
-              {currentStep === 1 && (
+              {currentStep === (existingPlan ? 0 : 1) && (
                 <SelectTeacher
                   teachers={teachers}
                   onSelectTeacher={setSelectedTeacher}
                 />
               )}
-              {currentStep === 2 && selectedPlan && (
+              {currentStep === (existingPlan ? 1 : 2) && selectedPlan && (
                 <ChooseDates
                   selectedPlan={selectedPlan}
                   selectedDates={selectedDates}
                   setSelectedDates={setSelectedDates}
                 />
               )}
-              {currentStep === 3 && selectedTeacher && (
+              {currentStep === (existingPlan ? 2 : 3) && selectedTeacher && (
                 <SelectTimes
                   selectedDates={selectedDates}
                   selectedTeacherId={selectedTeacher}
@@ -263,7 +270,7 @@ export default function LessonBooking() {
                   setSelectedSlots={setSelectedSlots}
                 />
               )}
-              {currentStep === 4 && paymentIntentClientSecret && (
+              {currentStep === (existingPlan ? 3 : 4) && paymentIntentClientSecret && (
                 <Elements stripe={stripePromise}>
                   <PaymentForm
                     clientSecret={paymentIntentClientSecret}
@@ -282,7 +289,7 @@ export default function LessonBooking() {
         <Button onClick={prevStep} disabled={currentStep === 0}>
           Previous
         </Button>
-        {currentStep < bookingSteps.length - 1 ? (
+        {currentStep < steps.length - 1 ? (
           <Button onClick={nextStep} disabled={
             (currentStep === 0 && !selectedPlan) ||
             (currentStep === 1 && !selectedTeacher) ||
