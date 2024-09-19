@@ -12,12 +12,18 @@ import { useToast } from "@/components/ui/use-toast"
 import { addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { User } from '@/types/booking'  // Add this import
+import { checkForConflicts } from '@/utils/bookingUtils'
+
+interface ExtendedUser extends User {
+  fullName?: string;
+  username?: string;
+}
 
 interface CreateLessonModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLessonCreated: () => void;
-  students: User[];
+  students: ExtendedUser[];
 }
 
 export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, students }: CreateLessonModalProps) {
@@ -37,6 +43,13 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
     if (!user || !selectedStudent) return
 
     try {
+      // Check for conflicts
+      const hasConflict = await checkForConflicts(user.id, date, startTime, endTime)
+      if (hasConflict) {
+        toast({ title: "Error", description: "There is a scheduling conflict. Please choose a different time.", variant: "destructive" })
+        return
+      }
+
       // Create a Stream Video call
       const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY
       if (!apiKey) throw new Error('Stream API key is not defined')
@@ -107,7 +120,7 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
               <SelectValue placeholder="Select a student" />
             </SelectTrigger>
             <SelectContent>
-              {students.map((student) => (
+              {students.map((student: ExtendedUser) => (
                 <SelectItem key={student.id} value={student.id}>
                   {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.username || 'Unnamed User'}
                 </SelectItem>

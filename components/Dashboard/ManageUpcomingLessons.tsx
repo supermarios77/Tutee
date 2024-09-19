@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { collection, query, where, getDocs, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Check, X } from 'lucide-react'
 
 interface Lesson {
     id: string;
@@ -22,6 +22,9 @@ interface Lesson {
     endTime: string;
     studentId: string;
     studentName: string;
+    status: 'scheduled' | 'rescheduling' | 'cancelled';
+    requestedDate?: string;
+    requestedTime?: string;
 }
 
 export default function ManageUpcomingLessons() {
@@ -103,6 +106,44 @@ export default function ManageUpcomingLessons() {
         }
     }
 
+    const handleApproveReschedule = async (lessonId: string) => {
+        try {
+            const lessonRef = doc(db, 'bookings', lessonId)
+            const lessonDoc = await getDoc(lessonRef)
+            if (lessonDoc.exists()) {
+                const lessonData = lessonDoc.data() as Lesson
+                await updateDoc(lessonRef, {
+                    date: lessonData.requestedDate,
+                    startTime: lessonData.requestedTime,
+                    status: 'scheduled',
+                    requestedDate: null,
+                    requestedTime: null
+                })
+                fetchLessons() // Refresh the lessons list
+                toast({ title: "Success", description: "Reschedule request approved." })
+            }
+        } catch (error) {
+            console.error('Error approving reschedule:', error)
+            toast({ title: "Error", description: "Failed to approve reschedule. Please try again.", variant: "destructive" })
+        }
+    }
+
+    const handleRejectReschedule = async (lessonId: string) => {
+        try {
+            const lessonRef = doc(db, 'bookings', lessonId)
+            await updateDoc(lessonRef, {
+                status: 'scheduled',
+                requestedDate: null,
+                requestedTime: null
+            })
+            fetchLessons() // Refresh the lessons list
+            toast({ title: "Success", description: "Reschedule request rejected." })
+        } catch (error) {
+            console.error('Error rejecting reschedule:', error)
+            toast({ title: "Error", description: "Failed to reject reschedule. Please try again.", variant: "destructive" })
+        }
+    }
+
     if (isLoading) {
         return <Skeleton className="w-full h-48" />
     }
@@ -121,6 +162,21 @@ export default function ManageUpcomingLessons() {
                                 <p>Date: {lesson.date}</p>
                                 <p>Time: {lesson.startTime} - {lesson.endTime}</p>
                                 <p>Student: {lesson.studentName}</p>
+                                {lesson.status === 'rescheduling' && (
+                                    <div className="mt-2">
+                                        <p className="text-yellow-500">Reschedule Requested:</p>
+                                        <p>New Date: {lesson.requestedDate}</p>
+                                        <p>New Time: {lesson.requestedTime}</p>
+                                        <div className="mt-2 flex space-x-2">
+                                            <Button variant="outline" size="sm" onClick={() => handleApproveReschedule(lesson.id)}>
+                                                <Check className="h-4 w-4 mr-2" /> Approve
+                                            </Button>
+                                            <Button variant="destructive" size="sm" onClick={() => handleRejectReschedule(lesson.id)}>
+                                                <X className="h-4 w-4 mr-2" /> Reject
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="mt-2 flex space-x-2">
                                     <Button variant="outline" size="sm" onClick={() => handleEditLesson(lesson)}>
                                         <Pencil className="h-4 w-4 mr-2" /> Edit

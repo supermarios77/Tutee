@@ -39,16 +39,13 @@ export interface Booking {
   id: string;
   teacherId: string;
   studentId: string;
-  studentName: string;
+  title?: string;
   date: string;
   startTime: string;
   endTime: string;
-  time: string;
-  lessonType: 'individual' | 'group' | 'instant';
-  status: 'scheduled' | 'completed' | 'cancelled' | 'paid';
-  subscriptionPlanId: string;
-  isFreeTrial: boolean;
-  notes: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  teacherName?: string;
+  // Add any other fields you're using
 }
 
 export interface User {
