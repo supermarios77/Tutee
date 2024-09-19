@@ -2,7 +2,9 @@ import { LucideIcon } from 'lucide-react';
 
 export interface Teacher {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  name: string; // Add this line
   email: string;
   bio: string;
   hourlyRate: number;
@@ -39,28 +41,33 @@ export interface Booking {
   id: string;
   teacherId: string;
   studentId: string;
-  studentName: string; // Add this line
+  studentName?: string; // Add this line
+  title?: string;
   date: string;
   startTime: string;
   endTime: string;
-  time: string;
-  lessonType: 'individual' | 'group' | 'instant';
   status: 'scheduled' | 'completed' | 'cancelled';
-  subscriptionPlanId: string;
-  isFreeTrial: boolean;
-  notes: string;
+  teacherName?: string;
+  subscriptionPlanId?: string; // Add this line
+  time?: string; // Add this line
+  lessonType?: 'individual' | 'group'; // Add this line
+  notes?: string; // Add this line
+  isFreeTrial?: boolean; // Add this line
 }
 
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  role: 'student' | 'teacher' | 'admin';
-  subscriptionPlanId?: string;
-  subscriptionStatus?: 'active' | 'inactive';
-  createdAt: string;
-  lastLoginAt: string;
+  firstName: string | null;
+  lastName: string | null;
+  name: string; // Add this line
+  email: string | null;
+  role: string;
+  lastLoginAt?: Date;
   hasClaimedFreeTrial: boolean;
+  subscriptionPlanId?: string; // Add this line
+  subscriptionStatus?: string; // Add this line
+  stripeCustomerId?: string; // Add this line
+  stripeSubscriptionId?: string; // Add this line
 }
 
 export interface UserBookingInfo {
@@ -74,4 +81,9 @@ export interface ActiveMeeting {
   description: string;
   startTime: Date;
   callId: string;
+}
+
+export interface TimeSlot {
+  start: Date;
+  end: Date;
 }

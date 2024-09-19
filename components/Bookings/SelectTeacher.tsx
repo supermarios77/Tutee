@@ -1,31 +1,23 @@
-// app/components/booking/SelectTeacher.tsx
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Teacher } from '../../types/booking';
+import React from 'react';
+import { Teacher } from '@/types/booking';
 
 interface SelectTeacherProps {
   teachers: Teacher[];
-  selectedTeacher: string | undefined;
   onSelectTeacher: (teacherId: string) => void;
 }
 
-export const SelectTeacher: React.FC<SelectTeacherProps> = ({
-  teachers,
-  selectedTeacher,
-  onSelectTeacher
-}) => {
+export const SelectTeacher: React.FC<SelectTeacherProps> = ({ teachers, onSelectTeacher }) => {
+  if (!Array.isArray(teachers) || teachers.length === 0) {
+    return <div className="text-center py-4">No teachers available at the moment.</div>;
+  }
+
   return (
-    <>
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Teacher</h2>
-      <Select onValueChange={onSelectTeacher} value={selectedTeacher}>
-        <SelectTrigger>
-          <SelectValue placeholder="Choose your teacher" />
-        </SelectTrigger>
-        <SelectContent>
-          {teachers.map((teacher) => (
-            <SelectItem key={teacher.id} value={teacher.id}>{teacher.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {teachers.map((teacher) => (
+        <option key={teacher.id} value={teacher.id}>
+          {teacher.firstName} {teacher.lastName}
+        </option>
+      ))}
+    </div>
   );
 };

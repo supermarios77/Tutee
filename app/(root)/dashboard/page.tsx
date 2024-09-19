@@ -1,30 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { collection, query, where, getDocs, Timestamp, deleteDoc, doc, limit, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Booking, User } from '@/types/booking';
+import React, { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { Teacher, Booking, TimeSlot, User } from '@/types/booking'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalendarDays, Clock, BookOpen, Users, DollarSign, ChevronRight, X, Plus, Settings, HelpCircle, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useStreamVideoClient } from '@stream-io/video-react-sdk';
-import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
-import MeetingTypeList from '@/components/Meeting/MeetingTypeList';
+import { Skeleton } from "@/components/ui/skeleton"
+import { BookOpen, Users, DollarSign, Plus, Settings, HelpCircle, CheckCircle, UserPlus, Calendar } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { format, addDays, startOfWeek, isSameDay } from 'date-fns'
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import CreateLessonModal from '@/components/Dashboard/CreateLessonModal'
+import ManageUpcomingLessons from '@/components/Dashboard/ManageUpcomingLessons'
 
-interface ActiveMeeting {
-  id: string;
-  description: string;
-  startTime: Date;
-  callId: string;
-}
-
-interface ToastProps {
-  title: string;
-  description?: string;
-  variant?: 'default' | 'destructive';
+interface TeacherStats {
+  totalStudents: number;
+  totalLessons: number;
+  totalEarnings: number;
 }
 
 interface Activity {
@@ -34,380 +38,397 @@ interface Activity {
   timestamp: Date;
 }
 
-function CustomDatePicker({ selectedDate, onDateChange, upcomingLessons }: { selectedDate: Date; onDateChange: (date: Date) => void; upcomingLessons: Booking[] }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+export default function TeacherDashboard() {
+  const { user } = useUser()
+  const router = useRouter()
+  const [upcomingLessons, setUpcomingLessons] = useState<Booking[]>([])
+  const [stats, setStats] = useState<TeacherStats>({ totalStudents: 0, totalLessons: 0, totalEarnings: 0 })
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
+  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()))
+  const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
+  const [students, setStudents] = useState<User[]>([])
 
-  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+  const fetchDashboardData = async () => {
+    if (!user) return
 
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const previousMonthDays = Array.from({ length: firstDayOfMonth }, (_, i) => i + 1);
-
-  const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-
-  const isToday = (day: number) => {
-    const today = new Date();
-    return day === today.getDate() && 
-           currentMonth.getMonth() === today.getMonth() && 
-           currentMonth.getFullYear() === today.getFullYear();
-  };
-
-  const hasLesson = (day: number) => {
-    return upcomingLessons.some(lesson => {
-      const lessonDate = new Date(lesson.date.seconds * 1000);
-      return lessonDate.getDate() === day && 
-             lessonDate.getMonth() === currentMonth.getMonth() && 
-             lessonDate.getFullYear() === currentMonth.getFullYear();
-    });
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={goToPreviousMonth} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <h2 className="text-lg font-semibold">
-          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </h2>
-        <button onClick={goToNextMonth} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-2 text-center">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-            {day}
-          </div>
-        ))}
-        {previousMonthDays.map((_, index) => (
-          <div key={`prev-${index}`} className="text-gray-300 dark:text-gray-600">
-            {new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, daysInMonth - firstDayOfMonth + index + 1).getDate()}
-          </div>
-        ))}
-        {days.map((day) => (
-          <button
-            key={day}
-            onClick={() => onDateChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))}
-            className={`p-2 rounded-full ${
-              isToday(day) ? 'bg-blue-500 text-white' : 
-              hasLesson(day) ? 'bg-green-200 dark:bg-green-700' : 
-              'hover:bg-gray-200 dark:hover:bg-gray-700'
-            } ${
-              selectedDate.getDate() === day && 
-              selectedDate.getMonth() === currentMonth.getMonth() && 
-              selectedDate.getFullYear() === currentMonth.getFullYear() 
-                ? 'ring-2 ring-blue-500' 
-                : ''
-            }`}
-          >
-            {day}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function TeacherHome() {
-  const { user } = useUser();
-  const [upcomingLessons, setUpcomingLessons] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({ totalStudents: 0, totalLessons: 0, totalEarnings: 0 });
-  const [activeMeetings, setActiveMeetings] = useState<ActiveMeeting[]>([]);
-  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const client = useStreamVideoClient();
-  const router = useRouter();
-  const { toast } = useToast<ToastProps>();
-
-  useEffect(() => {
-    const fetchTeacherData = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-      try {
-        const now = Timestamp.now();
-        const bookingsRef = collection(db, 'bookings');
-        const q = query(
-          bookingsRef,
-          where('teacherId', '==', user.id),
-          where('date', '>=', now),
-          where('status', '==', 'scheduled')
-        );
-
-        const querySnapshot = await getDocs(q);
-        const lessons = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Booking));
-
-        setUpcomingLessons(lessons);
-
-        const statsQuery = query(collection(db, 'teacherStats'), where('teacherId', '==', user.id));
-        const statsSnapshot = await getDocs(statsQuery);
-        if (!statsSnapshot.empty) {
-          const teacherStats = statsSnapshot.docs[0].data();
-          setStats({
-            totalStudents: teacherStats.totalStudents || 0,
-            totalLessons: teacherStats.totalLessons || 0,
-            totalEarnings: teacherStats.totalEarnings || 0
-          });
-        }
-
-        // Fetch active meetings
-        const activeMeetingsRef = collection(db, 'meetings');
-        const activeMeetingsQuery = query(activeMeetingsRef, where('teacherId', '==', user.id));
-        const activeMeetingsSnapshot = await getDocs(activeMeetingsQuery);
-        const activeMeetingsData = activeMeetingsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          description: doc.data().description,
-          startTime: doc.data().startTime.toDate(),
-          callId: doc.data().callId,
-        }));
-        setActiveMeetings(activeMeetingsData);
-
-        // Fetch recent activities
-        const activitiesRef = collection(db, 'teacherActivities');
-        const activitiesQuery = query(
-          activitiesRef, 
-          where('teacherId', '==', user.id),
-          orderBy('timestamp', 'desc'),
-          limit(5)
-        );
-        const activitiesSnapshot = await getDocs(activitiesQuery);
-        const activitiesData = activitiesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Activity));
-        setRecentActivities(activitiesData);
-
-      } catch (error) {
-        console.error('Error fetching teacher data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTeacherData();
-  }, [user]);
-
-  const endMeeting = async (meetingId: string) => {
-    if (!client || !user) return;
+    setIsLoading(true)
     try {
-      const meetingToEnd = activeMeetings.find(m => m.id === meetingId);
-      if (meetingToEnd) {
-        try {
-          const call = client.call('default', meetingToEnd.callId);
-          await call.endCall();
-        } catch (streamError) {
-          console.error('Error ending call in Stream:', streamError);
-        }
+      // Fetch upcoming lessons
+      const now = new Date()
+      const lessonsRef = collection(db, 'bookings')
+      const lessonsQuery = query(
+        lessonsRef,
+        where('teacherId', '==', user.id),
+        where('date', '>=', now.toISOString().split('T')[0]),
+        where('status', '==', 'scheduled'),
+        orderBy('date'),
+        orderBy('startTime'),
+        limit(5)
+      )
+      const lessonsSnapshot = await getDocs(lessonsQuery)
+      const lessonsData = lessonsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Booking))
+      setUpcomingLessons(lessonsData)
+
+      // Fetch teacher stats
+      const statsRef = doc(db, 'teacherStats', user.id)
+      const statsSnapshot = await getDoc(statsRef)
+      if (statsSnapshot.exists()) {
+        const teacherStats = statsSnapshot.data() as TeacherStats
+        setStats(teacherStats)
       }
 
-      await deleteDoc(doc(db, 'meetings', meetingId));
-      setActiveMeetings(prevMeetings => prevMeetings.filter(m => m.id !== meetingId));
+      // Fetch recent activities
+      const activitiesRef = collection(db, 'teacherActivities')
+      const activitiesQuery = query(
+        activitiesRef,
+        where('teacherId', '==', user.id),
+        orderBy('timestamp', 'desc'),
+        limit(5)
+      )
+      const activitiesSnapshot = await getDocs(activitiesQuery)
+      const activitiesData = activitiesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp.toDate()
+      } as Activity))
+      setRecentActivities(activitiesData)
 
-      toast({
-        title: 'Meeting Ended',
-        description: 'The meeting has been removed from your active meetings.',
-      });
+      // Fetch available slots
+      const slotsRef = doc(db, 'availableSlots', user.id)
+      const slotsSnapshot = await getDoc(slotsRef)
+      if (slotsSnapshot.exists()) {
+        const slotsData = slotsSnapshot.data().slots.map((slot: any) => ({
+          start: slot.start.toDate(),
+          end: slot.end.toDate()
+        })) as TimeSlot[]
+        setAvailableSlots(slotsData)
+      }
+
     } catch (error) {
-      console.error('Error ending meeting:', error);
-      toast({ 
-        title: 'Error Ending Meeting', 
-        description: 'The meeting could not be ended. It has been removed from your active meetings.',
-        variant: 'destructive'
+      console.error('Error fetching dashboard data:', error)
+      toast.error("Failed to load dashboard data. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchStudents = async () => {
+    if (!user) return;
+
+    try {
+      const studentsRef = collection(db, 'users');
+      const studentsQuery = query(studentsRef, where('role', '==', 'user'));
+      const studentsSnapshot = await getDocs(studentsQuery);
+      const studentsData = studentsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          firstName: data.firstName || null,
+          lastName: data.lastName || null,
+          email: data.email || null,
+          role: data.role || 'user',
+          lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
+          hasClaimedFreeTrial: data.hasClaimedFreeTrial || false,
+        } as User;
       });
-      
-      try {
-        await deleteDoc(doc(db, 'meetings', meetingId));
-        setActiveMeetings(prevMeetings => prevMeetings.filter(m => m.id !== meetingId));
-      } catch (deleteError) {
-        console.error('Error removing meeting from database:', deleteError);
-      }
+      setStudents(studentsData);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error("Failed to load students. Please try again.");
     }
   };
 
-  const now = new Date();
-  const time = now.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const date = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
+  useEffect(() => {
+    fetchDashboardData()
+    fetchStudents()
+  }, [user])
+
+  const handleSlotToggle = async (slot: TimeSlot) => {
+    if (!user) return
+
+    const slotsRef = doc(db, 'availableSlots', user.id)
+    const isSlotAvailable = availableSlots.some(s =>
+      isSameDay(s.start, slot.start) && s.start.getHours() === slot.start.getHours()
+    )
+
+    try {
+      let updatedSlots: TimeSlot[]
+      if (isSlotAvailable) {
+        updatedSlots = availableSlots.filter(s =>
+          !(isSameDay(s.start, slot.start) && s.start.getHours() === slot.start.getHours())
+        )
+      } else {
+        updatedSlots = [...availableSlots, slot]
+      }
+
+      await setDoc(slotsRef, {
+        slots: updatedSlots.map(s => ({
+          start: Timestamp.fromDate(s.start),
+          end: Timestamp.fromDate(s.end)
+        }))
+      }, { merge: true })
+
+      setAvailableSlots(updatedSlots)
+      toast.success(isSlotAvailable ? "Slot removed successfully" : "Slot added successfully")
+    } catch (error) {
+      console.error('Error updating available slots:', error)
+      toast.error("Failed to update time slot. Please try again.")
+    }
+  }
+
+  const handleLessonCreated = () => {
+    fetchDashboardData()
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <Card className="w-full bg-gradient-to-r from-blue-600 to-purple-600 border-none shadow-lg">
-        <CardContent className="p-6">
-          <h1 className="text-4xl font-bold text-white">{time}</h1>
-          <p className="text-lg text-gray-200">{date}</p>
-        </CardContent>
-      </Card>
+      <h1 className="text-3xl font-bold mb-6">Welcome back, {user?.firstName}!</h1>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {Object.entries(stats).map(([key, value]) => (
-          <StatsCard key={key} title={key} value={value} />
-        ))}
-      </div>
+      {isLoading ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
+          <div className="grid gap-6 md:grid-cols-3">
+            <StatsCard title="Total Students" value={stats.totalStudents} icon={<Users className="h-6 w-6" />} />
+            <StatsCard title="Total Lessons" value={stats.totalLessons} icon={<BookOpen className="h-6 w-6" />} />
+            <StatsCard title="Total Earnings" value={stats.totalEarnings} icon={<DollarSign className="h-6 w-6" />} prefix="$" />
+          </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-card text-card-foreground transition-colors duration-300">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Upcoming Lessons</CardTitle>
-            <Link href="/teacher/lessons" className="text-sm text-blue-500 hover:text-blue-700 flex items-center">
-              View all <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Lessons</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[250px] pr-4">
+                  {upcomingLessons.length > 0 ? (
+                    <ul className="space-y-2">
+                      {upcomingLessons.map((lesson) => (
+                        <LessonItem key={lesson.id} lesson={lesson} />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No upcoming lessons scheduled.</p>
+                  )}
+                </ScrollArea>
+                <Button asChild className="mt-4 w-full">
+                  <Link href="/dashboard/upcoming">View All Lessons</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[250px] pr-4">
+                  {recentActivities.length > 0 ? (
+                    <ul className="space-y-2">
+                      {recentActivities.map((activity) => (
+                        <ActivityItem key={activity.id} activity={activity} />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No recent activity.</p>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          <ManageUpcomingLessons />
+
+          <BookingSlotsCalendar
+            availableSlots={availableSlots}
+            currentWeek={currentWeek}
+            setCurrentWeek={setCurrentWeek}
+            handleSlotToggle={handleSlotToggle}
+          />
+
+          <QuickActions
+            openCreateLessonModal={() => setIsCreateLessonModalOpen(true)}
+            router={router}
+          />
+
+          <CreateLessonModal
+            isOpen={isCreateLessonModalOpen}
+            onClose={() => setIsCreateLessonModalOpen(false)}
+            onLessonCreated={handleLessonCreated}
+            students={students}
+          />
+        </>
+      )}
+      <Toaster />
+    </div>
+  )
+}
+
+const DashboardSkeleton = () => (
+  <div className="space-y-6">
+    <div className="grid gap-6 md:grid-cols-3">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-[100px]" />
+            <Skeleton className="h-6 w-6 rounded-full" />
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : upcomingLessons.length > 0 ? (
-              <ul className="space-y-2">
-                {upcomingLessons.slice(0, 3).map((lesson) => (
-                  <LessonItem key={lesson.id} lesson={lesson} />
-                ))}
-              </ul>
-            ) : (
-              <p>No upcoming lessons scheduled.</p>
-            )}
+            <Skeleton className="h-8 w-[100px]" />
           </CardContent>
         </Card>
-
-        <Card className="bg-card text-card-foreground transition-colors duration-300">
+      ))}
+    </div>
+    <div className="grid gap-6 md:grid-cols-2">
+      {[...Array(2)].map((_, i) => (
+        <Card key={i}>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Calendar
-            </CardTitle>
+            <Skeleton className="h-6 w-[150px]" />
           </CardHeader>
           <CardContent>
-            <CustomDatePicker
-              selectedDate={selectedDate}
-              onDateChange={setSelectedDate}
-              upcomingLessons={upcomingLessons}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <MeetingTypeList />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-card text-card-foreground transition-colors duration-300">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Active Meetings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : activeMeetings.length > 0 ? (
-              <ul className="space-y-2">
-                {activeMeetings.map((meeting) => (
-                  <ActiveMeetingItem key={meeting.id} meeting={meeting} onEndMeeting={endMeeting} />
-                ))}
-              </ul>
-            ) : (
-              <p>No active meetings.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card text-card-foreground transition-colors duration-300">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" onClick={() => router.push('/teacher/create-lesson')}>
-                <Plus className="h-4 w-4 mr-2" /> Create Lesson
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/teacher/students')}>
-                <Users className="h-4 w-4 mr-2" /> Manage Students
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/teacher/settings')}>
-                <Settings className="h-4 w-4 mr-2" /> Settings
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/teacher/support')}>
-                <HelpCircle className="h-4 w-4 mr-2" /> Get Support
-              </Button>
+            <div className="space-y-2">
+              {[...Array(3)].map((_, j) => (
+                <Skeleton key={j} className="h-12 w-full" />
+              ))}
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <Card className="bg-card text-card-foreground transition-colors duration-300">
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : recentActivities.length > 0 ? (
-            <ul className="space-y-2">
-              {recentActivities.map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} />
-              ))}
-            </ul>
-          ) : (
-            <p>No recent activity.</p>
-          )}
-        </CardContent>
-      </Card>
+      ))}
     </div>
-  );
+  </div>
+)
+
+interface BookingSlotsCalendarProps {
+  availableSlots: TimeSlot[];
+  currentWeek: Date;
+  setCurrentWeek: React.Dispatch<React.SetStateAction<Date>>;
+  handleSlotToggle: (slot: TimeSlot) => Promise<void>;
 }
 
-const StatsCard = ({ title, value }: { title: string; value: number }) => (
-  <Card className="bg-card text-card-foreground hover:bg-accent transition-colors duration-300">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">
-        {title.split(/(?=[A-Z])/).join(' ')}
-      </CardTitle>
-      {title === 'totalStudents' && <Users className="h-4 w-4 text-blue-400" />}
-      {title === 'totalLessons' && <BookOpen className="h-4 w-4 text-purple-400" />}
-      {title === 'totalEarnings' && <DollarSign className="h-4 w-4 text-green-400" />}
+const BookingSlotsCalendar: React.FC<BookingSlotsCalendarProps> = ({ availableSlots, currentWeek, setCurrentWeek, handleSlotToggle }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Manage Available Slots</CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{title === 'totalEarnings' ? `$${value}` : value}</div>
-      <p className="text-xs text-muted-foreground">
-        {title === 'totalStudents' && 'Active students'}
-        {title === 'totalLessons' && 'Lessons conducted'}
-        {title === 'totalEarnings' && 'Lifetime earnings'}
-      </p>
+      <div className="flex justify-between mb-4">
+        <Button onClick={() => setCurrentWeek(addDays(currentWeek, -7))}>Previous Week</Button>
+        <Button onClick={() => setCurrentWeek(addDays(currentWeek, 7))}>Next Week</Button>
+      </div>
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i)).map((day, index) => (
+          <div key={index} className="text-center">
+            <div className="font-semibold">{format(day, 'EEE')}</div>
+            <div>{format(day, 'dd')}</div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="mt-2">
+                  Manage
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{format(day, 'EEEE, MMMM d')}</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="mt-2 h-[300px]">
+                  <div className="space-y-2">
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      const slotStart = new Date(day.setHours(hour, 0, 0, 0))
+                      const slotEnd = new Date(day.setHours(hour + 1, 0, 0, 0))
+                      const isAvailable = availableSlots.some(s =>
+                        isSameDay(s.start, slotStart) && s.start.getHours() === hour
+                      )
+                      return (
+                        <Button
+                          key={`${index}-${hour}`}
+                          variant={isAvailable ? "default" : "outline"}
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleSlotToggle({ start: slotStart, end: slotEnd })}
+                        >
+                          {format(slotStart, 'HH:mm')} - {format(slotEnd, 'HH:mm')}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          </div>
+        ))}
+      </div>
     </CardContent>
   </Card>
-);
+)
+
+interface QuickActionsProps {
+  openCreateLessonModal: () => void;
+  router: any;
+}
+
+const QuickActions: React.FC<QuickActionsProps> = ({ openCreateLessonModal, router }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Quick Actions</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-2 gap-4">
+        <Button variant="outline" onClick={openCreateLessonModal}>
+          <Plus className="mr-2 h-4 w-4" /> Create Lesson
+        </Button>
+        <Button variant="outline" onClick={() => router.push('/dashboard/students')}>
+          <Users className="mr-2 h-4 w-4" /> Manage Students
+        </Button>
+        <Button variant="outline" onClick={() => router.push('/dashboard/settings')}>
+          <Settings className="mr-2 h-4 w-4" /> Settings
+        </Button>
+        <Button variant="outline" onClick={() => router.push('/dashboard/support')}>
+          <HelpCircle className="mr-2 h-4 w-4" /> Get Support
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+)
+
+const StatsCard = ({ title, value, icon, prefix = '' }: { title: string; value: number; icon: React.ReactNode; prefix?: string }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{prefix}{value}</div>
+    </CardContent>
+  </Card>
+)
 
 const LessonItem = ({ lesson }: { lesson: Booking }) => (
-  <li className="bg-muted p-3 rounded-lg transition-colors duration-300 hover:bg-accent">
-    <p className="font-semibold">{new Date(lesson.date.seconds * 1000).toLocaleDateString()}</p>
-    <p className="text-sm text-muted-foreground">{lesson.time}</p>
-    <p className="text-sm">Student: {lesson.studentName}</p>
-  </li>
-);
-
-const ActiveMeetingItem = ({ meeting, onEndMeeting }: { meeting: ActiveMeeting; onEndMeeting: (id: string) => void }) => (
-  <li className="bg-muted p-3 rounded-lg transition-colors duration-300 hover:bg-accent flex justify-between items-center">
+  <li className="flex justify-between items-center p-2 hover:bg-gray-100 rounded">
     <div>
-      <p className="font-semibold">{meeting.description}</p>
-      <p className="text-sm text-muted-foreground">Started: {meeting.startTime.toLocaleString()}</p>
+      <p className="font-semibold">{new Date(lesson.date).toLocaleDateString()}</p>
+      <p className="text-sm text-gray-600">{lesson.startTime} - {lesson.endTime}</p>
     </div>
-    <Button variant="destructive" size="sm" onClick={() => onEndMeeting(meeting.id)}>
-      <X className="h-4 w-4 mr-1" /> End Meeting
+    <Button size="sm" asChild>
+      <Link href={`/meeting/${lesson.id}`}>Join</Link>
     </Button>
   </li>
-);
+)
 
 const ActivityItem = ({ activity }: { activity: Activity }) => (
-  <li className="bg-muted p-3 rounded-lg transition-colors duration-300 hover:bg-accent">
-    <p className="font-semibold">{activity.description}</p>
-    <p className="text-sm text-muted-foreground">{activity.timestamp.toLocaleString()}</p>
+  <li className="flex items-center p-2 hover:bg-gray-100 rounded">
+    <div className="mr-4">
+      {activity.type === 'lesson_completed' && <CheckCircle className="h-5 w-5 text-green-500" />}
+      {activity.type === 'meeting_created' && <Calendar className="h-5 w-5 text-blue-500" />}
+      {activity.type === 'student_joined' && <UserPlus className="h-5 w-5 text-purple-500" />}
+    </div>
+    <div>
+      <p className="font-semibold">{activity.description}</p>
+      <p className="text-sm text-gray-600">{activity.timestamp.toLocaleString()}</p>
+    </div>
   </li>
-);
+)
