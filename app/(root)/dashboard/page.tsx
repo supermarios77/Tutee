@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import CreateLessonModal from '@/components/Dashboard/CreateLessonModal'
 
 interface TeacherStats {
   totalStudents: number;
@@ -45,74 +46,76 @@ export default function TeacherDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()))
+  const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
+
+  const fetchDashboardData = async () => {
+    if (!user) return
+
+    setIsLoading(true)
+    try {
+      // Fetch upcoming lessons
+      const now = new Date()
+      const lessonsRef = collection(db, 'bookings')
+      const lessonsQuery = query(
+        lessonsRef,
+        where('teacherId', '==', user.id),
+        where('date', '>=', now.toISOString().split('T')[0]),
+        where('status', '==', 'scheduled'),
+        orderBy('date'),
+        orderBy('startTime'),
+        limit(5)
+      )
+      const lessonsSnapshot = await getDocs(lessonsQuery)
+      const lessonsData = lessonsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Booking))
+      setUpcomingLessons(lessonsData)
+
+      // Fetch teacher stats
+      const statsRef = doc(db, 'teacherStats', user.id)
+      const statsSnapshot = await getDoc(statsRef)
+      if (statsSnapshot.exists()) {
+        const teacherStats = statsSnapshot.data() as TeacherStats
+        setStats(teacherStats)
+      }
+
+      // Fetch recent activities
+      const activitiesRef = collection(db, 'teacherActivities')
+      const activitiesQuery = query(
+        activitiesRef,
+        where('teacherId', '==', user.id),
+        orderBy('timestamp', 'desc'),
+        limit(5)
+      )
+      const activitiesSnapshot = await getDocs(activitiesQuery)
+      const activitiesData = activitiesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp.toDate()
+      } as Activity))
+      setRecentActivities(activitiesData)
+
+      // Fetch available slots
+      const slotsRef = doc(db, 'availableSlots', user.id)
+      const slotsSnapshot = await getDoc(slotsRef)
+      if (slotsSnapshot.exists()) {
+        const slotsData = slotsSnapshot.data().slots.map((slot: any) => ({
+          start: slot.start.toDate(),
+          end: slot.end.toDate()
+        })) as TimeSlot[]
+        setAvailableSlots(slotsData)
+      }
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      toast.error("Failed to load dashboard data. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!user) return
-
-      setIsLoading(true)
-      try {
-        // Fetch upcoming lessons
-        const now = new Date()
-        const lessonsRef = collection(db, 'bookings')
-        const lessonsQuery = query(
-          lessonsRef,
-          where('teacherId', '==', user.id),
-          where('date', '>=', now.toISOString()),
-          where('status', '==', 'scheduled'),
-          orderBy('date'),
-          limit(5)
-        )
-        const lessonsSnapshot = await getDocs(lessonsQuery)
-        const lessonsData = lessonsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Booking))
-        setUpcomingLessons(lessonsData)
-
-        // Fetch teacher stats
-        const statsRef = doc(db, 'teacherStats', user.id)
-        const statsSnapshot = await getDoc(statsRef)
-        if (statsSnapshot.exists()) {
-          const teacherStats = statsSnapshot.data() as TeacherStats
-          setStats(teacherStats)
-        }
-
-        // Fetch recent activities
-        const activitiesRef = collection(db, 'teacherActivities')
-        const activitiesQuery = query(
-          activitiesRef,
-          where('teacherId', '==', user.id),
-          orderBy('timestamp', 'desc'),
-          limit(5)
-        )
-        const activitiesSnapshot = await getDocs(activitiesQuery)
-        const activitiesData = activitiesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().timestamp.toDate()
-        } as Activity))
-        setRecentActivities(activitiesData)
-
-        // Fetch available slots
-        const slotsRef = doc(db, 'availableSlots', user.id)
-        const slotsSnapshot = await getDoc(slotsRef)
-        if (slotsSnapshot.exists()) {
-          const slotsData = slotsSnapshot.data().slots.map((slot: any) => ({
-            start: slot.start.toDate(),
-            end: slot.end.toDate()
-          })) as TimeSlot[]
-          setAvailableSlots(slotsData)
-        }
-
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-        toast.error("Failed to load dashboard data. Please try again.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchDashboardData()
   }, [user])
 
@@ -147,6 +150,10 @@ export default function TeacherDashboard() {
       console.error('Error updating available slots:', error)
       toast.error("Failed to update time slot. Please try again.")
     }
+  }
+
+  const handleLessonCreated = () => {
+    fetchDashboardData()
   }
 
   return (
@@ -213,7 +220,16 @@ export default function TeacherDashboard() {
             handleSlotToggle={handleSlotToggle}
           />
 
-          <QuickActions router={router} />
+          <QuickActions 
+            openCreateLessonModal={() => setIsCreateLessonModalOpen(true)}
+            router={router}
+          />
+
+          <CreateLessonModal
+            isOpen={isCreateLessonModalOpen}
+            onClose={() => setIsCreateLessonModalOpen(false)}
+            onLessonCreated={handleLessonCreated}
+          />
         </>
       )}
       <Toaster />
@@ -319,17 +335,18 @@ const BookingSlotsCalendar: React.FC<BookingSlotsCalendarProps> = ({ availableSl
 )
 
 interface QuickActionsProps {
-  router: any; // You might want to use a more specific type from Next.js if available
+  openCreateLessonModal: () => void;
+  router: any;
 }
 
-const QuickActions: React.FC<QuickActionsProps> = ({ router }) => (
+const QuickActions: React.FC<QuickActionsProps> = ({ openCreateLessonModal, router }) => (
   <Card>
     <CardHeader>
       <CardTitle>Quick Actions</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => router.push('/dashboard/create-lesson')}>
+        <Button variant="outline" onClick={openCreateLessonModal}>
           <Plus className="mr-2 h-4 w-4" /> Create Lesson
         </Button>
         <Button variant="outline" onClick={() => router.push('/dashboard/students')}>

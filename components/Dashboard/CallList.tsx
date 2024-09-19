@@ -1,107 +1,86 @@
 'use client';
 
-import { Call, CallRecording } from '@stream-io/video-react-sdk';
-
-import Loader from '../Loader';
-import { useGetCalls } from '@/hooks/useGetCalls';
-import MeetingCard from '../Meeting/MeetingCard';
 import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import Loader from '../Loader';
+import MeetingCard from '../Meeting/MeetingCard';
 import { useRouter } from 'next/navigation';
 
-const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
+interface Lesson {
+  id: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  callId: string;
+  // Add other properties as needed
+}
+
+const CallList = ({ type }: { type: 'upcoming' | 'ended' | 'recordings' }) => {
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useUser();
   const router = useRouter();
-  const { endedCalls, upcomingCalls, callRecordings, isLoading } =
-    useGetCalls();
-  const [recordings, setRecordings] = useState<CallRecording[]>([]);
-
-  const getCalls = () => {
-    switch (type) {
-      case 'ended':
-        return endedCalls;
-      case 'recordings':
-        return recordings;
-      case 'upcoming':
-        return upcomingCalls;
-      default:
-        return [];
-    }
-  };
-
-  const getNoCallsMessage = () => {
-    switch (type) {
-      case 'ended':
-        return 'No Previous Calls';
-      case 'upcoming':
-        return 'No Upcoming Calls';
-      case 'recordings':
-        return 'No Recordings';
-      default:
-        return '';
-    }
-  };
 
   useEffect(() => {
-    const fetchRecordings = async () => {
-      const callData = await Promise.all(
-        callRecordings?.map((meeting) => meeting.queryRecordings()) ?? [],
+    const fetchLessons = async () => {
+      if (!user) return;
+
+      const lessonsRef = collection(db, 'bookings');  // Changed from 'lessons' to 'bookings'
+      const now = new Date();
+      const q = query(
+        lessonsRef,
+        where('teacherId', '==', user.id),
+        where('date', type === 'upcoming' ? '>=' : '<', now.toISOString().split('T')[0]),
+        orderBy('date', type === 'upcoming' ? 'asc' : 'desc')
       );
 
-      const recordings = callData
-        .filter((call) => call.recordings.length > 0)
-        .flatMap((call) => call.recordings);
-
-      setRecordings(recordings);
+      const querySnapshot = await getDocs(q);
+      const fetchedLessons: Lesson[] = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() as Omit<Lesson, 'id'>
+      }));
+      setLessons(fetchedLessons);
+      setIsLoading(false);
     };
 
-    if (type === 'recordings') {
-      fetchRecordings();
-    }
-  }, [type, callRecordings]);
+    fetchLessons();
+  }, [user, type]);
 
   if (isLoading) return <Loader />;
 
-  const calls = getCalls();
-  const noCallsMessage = getNoCallsMessage();
+  const getNoCallsMessage = () => {
+    switch (type) {
+      case 'upcoming':
+        return 'No upcoming lessons scheduled.';
+      case 'ended':
+        return 'No previous lessons found.';
+      case 'recordings':
+        return 'No recordings available.';
+      default:
+        return 'No lessons found.';
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      {calls && calls.length > 0 ? (
-        calls.map((meeting: Call | CallRecording) => (
+      {lessons.length > 0 ? (
+        lessons.map((lesson) => (
           <MeetingCard
-            key={(meeting as Call).id}
-            icon={
-              type === 'ended'
-                ? '/assets/icons/previous.svg'
-                : type === 'upcoming'
-                  ? '/assets/icons/upcoming.svg'
-                  : '/assets/icons/recordings.svg'
-            }
-            title={
-              (meeting as Call).state?.custom?.description ||
-              (meeting as CallRecording).filename?.substring(0, 20) ||
-              'No Description'
-            }
-            date={
-              (meeting as Call).state?.startsAt?.toLocaleString() ||
-              (meeting as CallRecording).start_time?.toLocaleString()
-            }
+            key={lesson.id}
+            icon={type === 'ended' ? '/assets/icons/previous.svg' : '/assets/icons/upcoming.svg'}
+            title={lesson.title}
+            date={`${lesson.date} ${lesson.startTime} - ${lesson.endTime}`}
             isPreviousMeeting={type === 'ended'}
-            link={
-              type === 'recordings'
-                ? (meeting as CallRecording).url
-                : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${(meeting as Call).id}`
-            }
-            buttonIcon1={type === 'recordings' ? '/assets/iconsplay.svg' : undefined}
-            buttonText={type === 'recordings' ? 'Play' : 'Start'}
-            handleClick={
-              type === 'recordings'
-                ? () => router.push(`${(meeting as CallRecording).url}`)
-                : () => router.push(`/meeting/${(meeting as Call).id}`)
-            }
+            link={`/meeting/${lesson.callId}`}
+            buttonText={type === 'upcoming' ? 'Join' : 'View'}
+            handleClick={() => router.push(`/meeting/${lesson.callId}`)}
           />
         ))
       ) : (
-        <h1 className="text-2xl font-bold text-white">{noCallsMessage}</h1>
+        <h1 className="text-2xl font-bold text-white">{getNoCallsMessage()}</h1>
       )}
     </div>
   );
