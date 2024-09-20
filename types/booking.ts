@@ -4,14 +4,17 @@ export interface Teacher {
   id: string;
   firstName: string;
   lastName: string;
-  name: string; // Add this line
+  name: string;
   email: string;
   bio: string;
   hourlyRate: number;
+  avatarUrl?: string;
+  specializations?: string[];
   availability: {
-    [key: string]: { start: string; end: string };
+    [key: string]: string[];
   };
   bookings: Booking[];
+  availableForBooking: boolean;
 }
 
 export interface SubscriptionPlan {

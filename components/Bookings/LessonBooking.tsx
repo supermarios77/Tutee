@@ -69,8 +69,14 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
       if (!response.ok) {
         throw new Error('Failed to fetch teachers');
       }
-      const teachersData = await response.json();
-      setTeachers(teachersData);
+      const data = await response.json();
+      console.log('Fetched teachers data:', data);
+      if (Array.isArray(data.teachers) && data.teachers.length > 0) {
+        setTeachers(data.teachers);
+      } else {
+        console.log('No teachers returned from API');
+        setError('No teachers available at the moment. Please try again later.');
+      }
     } catch (error) {
       console.error('Error fetching teachers:', error);
       setError('Failed to fetch teachers. Please try again.');
@@ -92,6 +98,8 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
           dates.some(date => isSameDay(slot.start, date))
         );
         setAvailableSlots(filteredSlots);
+      } else {
+        setError('No available slots found for this teacher.');
       }
     } catch (error) {
       console.error('Error fetching available slots:', error);
@@ -256,8 +264,9 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
               )}
               {currentStep === (existingPlan ? 0 : 1) && (
                 <SelectTeacher
-                  teachers={teachers}
                   onSelectTeacher={setSelectedTeacher}
+                  selectedPlan={selectedPlan?.id || ''}
+                  teachers={teachers} // Make sure you're passing the teachers prop
                 />
               )}
               {currentStep === (existingPlan ? 1 : 2) && selectedPlan && (
@@ -273,6 +282,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
                   selectedTeacherId={selectedTeacher}
                   selectedSlots={selectedSlots}
                   setSelectedSlots={setSelectedSlots}
+                  availableSlots={availableSlots}
                 />
               )}
               {currentStep === (existingPlan ? 3 : 4) && paymentIntentClientSecret && (

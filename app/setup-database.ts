@@ -17,13 +17,16 @@ const teachers: Teacher[] = [
     bio: 'Experienced English teacher specializing in conversation and business English.',
     hourlyRate: 17.5,
     availability: {
-      monday: { start: '09:00', end: '17:00' },
-      tuesday: { start: '09:00', end: '17:00' },
-      wednesday: { start: '09:00', end: '17:00' },
-      thursday: { start: '09:00', end: '17:00' },
-      friday: { start: '09:00', end: '17:00' },
+      Monday: ['09:00-17:00'],
+      Tuesday: ['10:00-18:00'],
+      Wednesday: ['08:00-16:00'],
+      Thursday: ['11:00-19:00'],
+      Friday: ['09:00-17:00'],
+      Saturday: [],
+      Sunday: []
     },
-    bookings: []
+    bookings: [],
+    availableForBooking: true
   },
   {
     id: 'teacher2',
@@ -34,13 +37,16 @@ const teachers: Teacher[] = [
     bio: 'TEFL certified teacher with 5 years of experience in teaching English as a second language.',
     hourlyRate: 17.5,
     availability: {
-      monday: { start: '10:00', end: '18:00' },
-      tuesday: { start: '10:00', end: '18:00' },
-      wednesday: { start: '10:00', end: '18:00' },
-      thursday: { start: '10:00', end: '18:00' },
-      friday: { start: '10:00', end: '18:00' },
+      Monday: ['10:00-18:00'],
+      Tuesday: ['10:00-18:00'],
+      Wednesday: ['10:00-18:00'],
+      Thursday: ['10:00-18:00'],
+      Friday: ['10:00-18:00'],
+      Saturday: [],
+      Sunday: []
     },
-    bookings: []
+    bookings: [],
+    availableForBooking: true
   }
 ];
 
@@ -272,23 +278,26 @@ async function createAvailableSlots(): Promise<void> {
     const availableSlots: TimeSlot[] = [];
 
     while (currentDate <= endDate) {
-      const dayOfWeek = format(currentDate, 'EEEE').toLowerCase();
-      const teacherAvailability = teacher.availability[dayOfWeek as keyof typeof teacher.availability];
+      const dayName = format(currentDate, 'EEEE') as keyof typeof teacher.availability;
+      const teacherAvailability = teacher.availability[dayName];
 
-      if (teacherAvailability) {
-        const [startHour, startMinute] = teacherAvailability.start.split(':').map(Number);
-        const [endHour, endMinute] = teacherAvailability.end.split(':').map(Number);
+      if (teacherAvailability && teacherAvailability.length > 0) {
+        for (const timeRange of teacherAvailability) {
+          const [startTime, endTime] = timeRange.split('-');
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
 
-        let slotStart = setMinutes(setHours(currentDate, startHour), startMinute);
-        const slotEnd = setMinutes(setHours(currentDate, endHour), endMinute);
+          let slotStart = setMinutes(setHours(currentDate, startHour), startMinute);
+          const slotEnd = setMinutes(setHours(currentDate, endHour), endMinute);
 
-        while (slotStart < slotEnd) {
-          const slotEndTime = new Date(slotStart.getTime() + 60 * 60 * 1000); // Add 1 hour
-          availableSlots.push({
-            start: slotStart,
-            end: slotEndTime,
-          });
-          slotStart = new Date(slotEndTime);
+          while (slotStart < slotEnd) {
+            const slotEndTime = new Date(slotStart.getTime() + 60 * 60 * 1000); // Add 1 hour
+            availableSlots.push({
+              start: slotStart,
+              end: slotEndTime,
+            });
+            slotStart = new Date(slotEndTime);
+          }
         }
       }
 

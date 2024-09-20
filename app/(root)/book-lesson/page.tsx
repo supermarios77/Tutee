@@ -14,7 +14,7 @@ import { addDoc } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
 import { Teacher } from '@/types/booking'  // Add this import
 
-export default function BookLesson() {
+export default function BookLessonPage() {
   const { user } = useUser()
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [selectedTeacher, setSelectedTeacher] = useState('')
@@ -80,14 +80,14 @@ export default function BookLesson() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleBookLesson} className="space-y-4">
-            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+            <Select onValueChange={setSelectedTeacher} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select a teacher" />
               </SelectTrigger>
               <SelectContent>
                 {teachers.map((teacher) => (
                   <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.firstName} {teacher.lastName}
+                    {teacher.name || `${teacher.firstName} ${teacher.lastName}`.trim()}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -28,6 +28,7 @@
 		"@nextui-org/switch": "^2.0.32",
 		"@nextui-org/system": "^2.2.3",
 		"@nextui-org/theme": "^2.2.8",
+		"@radix-ui/react-avatar": "^1.1.0",
 		"@radix-ui/react-label": "^2.1.0",
 		"@radix-ui/react-popover": "^1.1.1",
 		"@radix-ui/react-scroll-area": "^1.1.0",
