@@ -3,8 +3,6 @@ import { Teacher } from '@/types/booking';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 interface SelectTeacherProps {
   onSelectTeacher: (teacherId: string) => void;

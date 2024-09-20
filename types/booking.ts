@@ -2,14 +2,16 @@ import { LucideIcon } from 'lucide-react';
 
 export interface Teacher {
   id: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   bio: string;
   hourlyRate: number;
   avatarUrl?: string;
   specializations?: string[];
-  availability?: {
-    [day: string]: string[];
+  availability: {
+    [key: string]: string[];
   };
   bookings: Booking[];
   availableForBooking: boolean;
