@@ -2,19 +2,10 @@ import { LucideIcon } from 'lucide-react';
 
 export interface Teacher {
   id: string;
-  firstName: string;
-  lastName: string;
   name: string;
   email: string;
-  bio: string;
-  hourlyRate: number;
   avatarUrl?: string;
-  specializations?: string[];
-  availability: {
-    [key: string]: string[];
-  };
-  bookings: Booking[];
-  availableForBooking: boolean;
+  // Add other fields as needed
 }
 
 export interface SubscriptionPlan {
@@ -71,6 +62,7 @@ export interface User {
   subscriptionStatus?: string; // Add this line
   stripeCustomerId?: string; // Add this line
   stripeSubscriptionId?: string; // Add this line
+  updatedAt: number;
 }
 
 export interface UserBookingInfo {

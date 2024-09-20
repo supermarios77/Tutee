@@ -54,11 +54,11 @@ export default function TeacherDashboard() {
   const fetchDashboardData = async () => {
     if (!user) return
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Fetch upcoming lessons
-      const now = new Date()
-      const lessonsRef = collection(db, 'bookings')
+      const now = new Date();
+      const lessonsRef = collection(db, 'bookings');
       const lessonsQuery = query(
         lessonsRef,
         where('teacherId', '==', user.id),
@@ -67,56 +67,56 @@ export default function TeacherDashboard() {
         orderBy('date'),
         orderBy('startTime'),
         limit(5)
-      )
-      const lessonsSnapshot = await getDocs(lessonsQuery)
+      );
+      const lessonsSnapshot = await getDocs(lessonsQuery);
       const lessonsData = lessonsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      } as Booking))
-      setUpcomingLessons(lessonsData)
+      } as Booking));
+      setUpcomingLessons(lessonsData);
 
       // Fetch teacher stats
-      const statsRef = doc(db, 'teacherStats', user.id)
-      const statsSnapshot = await getDoc(statsRef)
+      const statsRef = doc(db, 'teacherStats', user.id);
+      const statsSnapshot = await getDoc(statsRef);
       if (statsSnapshot.exists()) {
-        const teacherStats = statsSnapshot.data() as TeacherStats
-        setStats(teacherStats)
+        const teacherStats = statsSnapshot.data() as TeacherStats;
+        setStats(teacherStats);
       }
 
       // Fetch recent activities
-      const activitiesRef = collection(db, 'teacherActivities')
+      const activitiesRef = collection(db, 'teacherActivities');
       const activitiesQuery = query(
         activitiesRef,
         where('teacherId', '==', user.id),
         orderBy('timestamp', 'desc'),
         limit(5)
-      )
-      const activitiesSnapshot = await getDocs(activitiesQuery)
+      );
+      const activitiesSnapshot = await getDocs(activitiesQuery);
       const activitiesData = activitiesSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         timestamp: doc.data().timestamp.toDate()
-      } as Activity))
-      setRecentActivities(activitiesData)
+      } as Activity));
+      setRecentActivities(activitiesData);
 
       // Fetch available slots
-      const slotsRef = doc(db, 'availableSlots', user.id)
-      const slotsSnapshot = await getDoc(slotsRef)
+      const slotsRef = doc(db, 'availableSlots', user.id);
+      const slotsSnapshot = await getDoc(slotsRef);
       if (slotsSnapshot.exists()) {
         const slotsData = slotsSnapshot.data().slots.map((slot: any) => ({
           start: slot.start.toDate(),
           end: slot.end.toDate()
-        })) as TimeSlot[]
-        setAvailableSlots(slotsData)
+        })) as TimeSlot[];
+        setAvailableSlots(slotsData);
       }
 
     } catch (error) {
-      logger.error('Error fetching dashboard data:', error)
-      toast.error("Failed to load dashboard data. Please try again.")
+      logger.error('Error fetching dashboard data:', error);
+      toast.error("Failed to load dashboard data. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const fetchStudents = async () => {
     if (!user) return;

@@ -12,7 +12,7 @@ import { SelectTimes } from '@/components/Bookings/SelectTimes';
 import { PaymentForm } from '@/components/Bookings/PaymentForm';
 import { bookingSteps, subscriptionPlans } from '@/constants/booking';
 import { Teacher, SubscriptionPlan, TimeSlot, Booking } from '@/types/booking';
-import { collection, addDoc, doc, updateDoc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, arrayUnion, increment, setDoc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, isSameDay } from 'date-fns';
+import logger from '@/lib/logger';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -30,7 +31,7 @@ interface LessonBookingProps {
 export default function LessonBooking({ existingPlan }: LessonBookingProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | undefined>(undefined);
-  const [selectedTeacher, setSelectedTeacher] = useState<string | undefined>(undefined);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
@@ -40,16 +41,11 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
 
   const { user } = useUser();
   const { userBookingInfo, isLoading: isUserInfoLoading } = useUserBookingInfo();
   const router = useRouter();
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchTeachers();
-  }, []);
 
   useEffect(() => {
     if (selectedTeacher && selectedDates.length > 0) {
@@ -63,31 +59,11 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
     }
   }, [userBookingInfo]);
 
-  const fetchTeachers = async () => {
-    try {
-      const response = await fetch('/api/get-teachers');
-      if (!response.ok) {
-        throw new Error('Failed to fetch teachers');
-      }
-      const data = await response.json();
-      console.log('Fetched teachers data:', data);
-      if (Array.isArray(data.teachers) && data.teachers.length > 0) {
-        setTeachers(data.teachers);
-      } else {
-        console.log('No teachers returned from API');
-        setError('No teachers available at the moment. Please try again later.');
-      }
-    } catch (error) {
-      logger.error('Error fetching teachers:', error);
-      setError('Failed to fetch teachers. Please try again.');
-    }
-  };
-
-  const fetchAvailableSlots = async (teacherId: string, dates: Date[]) => {
+  const fetchAvailableSlots = async (teacher: Teacher, dates: Date[]) => {
     setIsLoading(true);
     setError(null);
     try {
-      const slotsRef = doc(db, 'availableSlots', teacherId);
+      const slotsRef = doc(db, 'availableSlots', teacher.id);
       const slotsSnapshot = await getDoc(slotsRef);
       if (slotsSnapshot.exists()) {
         const allSlots = slotsSnapshot.data().slots.map((slot: any) => ({
@@ -116,7 +92,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
     setError(null);
     try {
       const bookings = selectedSlots.map((slot, index) => ({
-        teacherId: selectedTeacher,
+        teacherId: selectedTeacher.id,
         studentId: user.id,
         date: format(selectedDates[index], 'yyyy-MM-dd'),
         startTime: format(slot.start, 'HH:mm'),
@@ -202,7 +178,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
       });
 
       setSelectedSlots([]);
-      setSelectedTeacher(undefined);
+      setSelectedTeacher(null);
       setSelectedDates([]);
       setSelectedPlan(undefined);
       setCurrentStep(0);
@@ -266,23 +242,22 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
                 <SelectTeacher
                   onSelectTeacher={setSelectedTeacher}
                   selectedPlan={selectedPlan?.id || ''}
-                  teachers={teachers} // Make sure you're passing the teachers prop
                 />
               )}
-              {currentStep === (existingPlan ? 1 : 2) && selectedPlan && (
+              {currentStep === (existingPlan ? 1 : 2) && selectedPlan && selectedTeacher && (
                 <ChooseDates
                   selectedPlan={selectedPlan}
                   selectedDates={selectedDates}
                   setSelectedDates={setSelectedDates}
+                  selectedTeacherId={selectedTeacher.id}
                 />
               )}
               {currentStep === (existingPlan ? 2 : 3) && selectedTeacher && (
                 <SelectTimes
                   selectedDates={selectedDates}
-                  selectedTeacherId={selectedTeacher}
+                  selectedTeacherId={selectedTeacher.id}
                   selectedSlots={selectedSlots}
                   setSelectedSlots={setSelectedSlots}
-                  availableSlots={availableSlots}
                 />
               )}
               {currentStep === (existingPlan ? 3 : 4) && paymentIntentClientSecret && (
