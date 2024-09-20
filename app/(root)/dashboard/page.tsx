@@ -24,6 +24,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import CreateLessonModal from '@/components/Dashboard/CreateLessonModal'
 import ManageUpcomingLessons from '@/components/Dashboard/ManageUpcomingLessons'
+import logger from '@/lib/logger';
 
 interface TeacherStats {
   totalStudents: number;
@@ -110,7 +111,7 @@ export default function TeacherDashboard() {
       }
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
+      logger.error('Error fetching dashboard data:', error)
       toast.error("Failed to load dashboard data. Please try again.")
     } finally {
       setIsLoading(false)
@@ -138,7 +139,7 @@ export default function TeacherDashboard() {
       });
       setStudents(studentsData);
     } catch (error) {
-      console.error('Error fetching students:', error);
+      logger.error('Error fetching students:', error)
       toast.error("Failed to load students. Please try again.");
     }
   };
@@ -176,7 +177,7 @@ export default function TeacherDashboard() {
       setAvailableSlots(updatedSlots)
       toast.success(isSlotAvailable ? "Slot removed successfully" : "Slot added successfully")
     } catch (error) {
-      console.error('Error updating available slots:', error)
+      logger.error('Error updating available slots:', error)
       toast.error("Failed to update time slot. Please try again.")
     }
   }

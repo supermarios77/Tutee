@@ -78,7 +78,7 @@ export default function CallControls() {
       await call?.endCall();
       play();
     } catch (error) {
-      console.error('Failed to end call for everyone:', error);
+      logger.error('Failed to end call for everyone:', error);
     }
   };
 

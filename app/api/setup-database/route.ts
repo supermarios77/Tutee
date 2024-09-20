@@ -8,7 +8,7 @@ export async function GET() {
     await setupDatabase();
     return NextResponse.json({ message: 'Database setup completed successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Error setting up database:', error);
+    logger.error('Error setting up database:', error);
     return NextResponse.json({ error: 'Failed to set up database' }, { status: 500 });
   }
 }

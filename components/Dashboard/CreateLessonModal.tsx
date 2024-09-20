@@ -13,6 +13,7 @@ import { addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { User } from '@/types/booking'  // Add this import
 import { checkForConflicts } from '@/utils/bookingUtils'
+import logger from '@/lib/logger';
 
 interface ExtendedUser extends User {
   fullName?: string;
@@ -85,7 +86,7 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
       onLessonCreated()
       onClose()
     } catch (error) {
-      console.error('Error creating lesson:', error)
+      logger.error('Error creating lesson:', error)
       toast({ title: "Failed to create lesson", description: "Please try again" })
     }
   }

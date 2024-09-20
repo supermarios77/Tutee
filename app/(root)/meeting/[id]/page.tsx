@@ -59,7 +59,7 @@ const MeetingPage: React.FC = () => {
 
       setClient(clientInstance);
     } catch (error) {
-      console.error('Error initializing Stream client:', error);
+      logger.error('Error initializing Stream client:', error);
       setError('Failed to initialize video call');
     }
   }, [user]);
@@ -81,7 +81,7 @@ const MeetingPage: React.FC = () => {
         await callInstance.join({ create: true });
         console.log('Call joined successfully');
       } catch (error) {
-        console.error('Error joining call:', error);
+        logger.error('Error joining call:', error);
         if (error instanceof Error && !error.message.includes('Already joined')) {
           setError('Failed to join call. Please try again.');
         }
@@ -92,7 +92,7 @@ const MeetingPage: React.FC = () => {
 
     return () => {
       if (callInstance.state.callingState === 'joined') {
-        callInstance.leave().catch(console.error);
+        callInstance.leave().catch(logger.error);
       }
     };
   }, [client, id]);

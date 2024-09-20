@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: docRef.id, message: 'Lesson booked successfully' })
   } catch (error) {
-    console.error('Error booking lesson:', error)
+    logger.error('Error booking lesson:', error)
     return NextResponse.json({ error: 'Failed to book lesson' }, { status: 500 })
   }
 }

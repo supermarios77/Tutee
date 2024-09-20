@@ -19,7 +19,7 @@ export const useTeachers = () => {
         const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher));
         setTeachers(teachersData);
       } catch (error) {
-        console.error('Error fetching teachers:', error);
+        logger.error('Error fetching teachers:', error);
         setError('Failed to fetch teachers. Please try again.');
       } finally {
         setIsLoading(false);

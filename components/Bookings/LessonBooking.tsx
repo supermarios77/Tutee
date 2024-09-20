@@ -78,7 +78,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
         setError('No teachers available at the moment. Please try again later.');
       }
     } catch (error) {
-      console.error('Error fetching teachers:', error);
+      logger.error('Error fetching teachers:', error);
       setError('Failed to fetch teachers. Please try again.');
     }
   };
@@ -102,7 +102,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
         setError('No available slots found for this teacher.');
       }
     } catch (error) {
-      console.error('Error fetching available slots:', error);
+      logger.error('Error fetching available slots:', error);
       setError('Failed to fetch available slots. Please try again.');
     } finally {
       setIsLoading(false);
@@ -157,7 +157,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
 
       setCurrentStep(bookingSteps.length - 1);
     } catch (error) {
-      console.error('Error booking lesson:', error);
+      logger.error('Error booking lesson:', error);
       setError('Failed to book lesson. Please try again.');
     } finally {
       setIsLoading(false);
@@ -178,7 +178,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
         totalLessons: increment(1)
       }, { merge: true });
     } catch (error) {
-      console.error("Error updating Firebase after booking:", error);
+      logger.error("Error updating Firebase after booking:", error);
       throw new Error("Failed to update user information after booking.");
     }
   };
@@ -211,7 +211,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
 
       router.push('/student-dashboard');
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      logger.error('Error updating booking status:', error);
       setError('Payment successful, but there was an error updating your booking. Please contact support.');
     }
   };
@@ -223,7 +223,7 @@ export default function LessonBooking({ existingPlan }: LessonBookingProps) {
     return <div>Loading...</div>;
   }
 
-  const steps = existingPlan 
+  const steps = existingPlan
     ? ['Select Date', 'Select Time', 'Confirm Booking']
     : ['Select Plan', 'Select Teacher', 'Select Date', 'Select Time', 'Payment', 'Confirmation'];
 

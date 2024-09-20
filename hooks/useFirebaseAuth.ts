@@ -25,7 +25,7 @@ export function useFirebaseAuth() {
           const firebaseUser = userCredential.user;
           console.log('Firebase user signed in:', firebaseUser);
         } catch (error) {
-          console.error('Error signing in to Firebase:', error);
+          logger.error('Error signing in to Firebase:', error);
         }
       };
       getToken();

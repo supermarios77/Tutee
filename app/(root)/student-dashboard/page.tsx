@@ -13,6 +13,7 @@ import StudentUpcomingLessons from '@/components/Dashboard/StudentUpcomingLesson
 import { Skeleton } from "@/components/ui/skeleton";
 import { Booking } from '@/types/booking';
 import BookLessonModal from '@/components/Dashboard/BookLessonModal';
+import logger from '@/lib/logger';
 
 export default function StudentDashboard() {
   const { user } = useUser();
@@ -56,7 +57,9 @@ export default function StudentDashboard() {
       setTotalLessons(totalLessonsSnapshot.size);
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      logger.error('Error fetching dashboard data:', error);
+      // Optionally, you can add a user-friendly error message here
+      logger.error('An error occurred while fetching dashboard data. Please try again later.');
     } finally {
       setIsLoading(false);
     }

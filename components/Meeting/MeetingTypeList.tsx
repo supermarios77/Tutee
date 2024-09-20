@@ -59,7 +59,7 @@ export default function MeetingTypeList() {
         title: 'Meeting Created',
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast({ title: 'Failed to create Meeting' });
     }
   };

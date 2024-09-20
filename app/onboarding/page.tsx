@@ -37,7 +37,7 @@ export default function OnboardingPage() {
 
       router.push('/booking')
     } catch (error) {
-      console.error('Error saving onboarding data:', error)
+      logger.error('Error saving onboarding data:', error)
     }
   }
 
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-blue-100 via-white to-purple-100 dark:from-blue-900 dark:via-gray-900 dark:to-purple-900 p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -59,9 +59,8 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               {steps.map((step, index) => (
                 <div key={index} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
-                    index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${index <= currentStep ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'
+                    }`}>
                     {index < currentStep ? <CheckCircle size={20} /> : <step.icon size={20} />}
                   </div>
                   <span className={index <= currentStep ? 'font-semibold' : 'text-blue-200'}>{step.title}</span>

@@ -17,7 +17,7 @@ export async function scheduleLesson(lesson: Omit<Lesson, 'status'>) {
     console.log('Lesson scheduled with ID: ', docRef.id)
     return docRef.id
   } catch (error) {
-    console.error('Error scheduling lesson: ', error)
+    logger.error('Error scheduling lesson: ', error)
     throw error
   }
 }

@@ -339,6 +339,6 @@ export async function setupDatabase(): Promise<void> {
 
     console.log('Database setup completed successfully');
   } catch (error) {
-    console.error('Error setting up database:', error);
+    logger.error('Error setting up database:', error);
   }
 }

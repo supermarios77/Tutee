@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Pencil, Trash2, Check, X } from 'lucide-react'
+import logger from '@/lib/logger';
 
 interface Lesson {
     id: string;
@@ -61,7 +62,7 @@ export default function ManageUpcomingLessons() {
             } as Lesson))
             setLessons(fetchedLessons)
         } catch (error) {
-            console.error('Error fetching lessons:', error)
+            logger.error('Error fetching lessons:', error)
             toast({ title: "Error", description: "Failed to fetch lessons. Please try again.", variant: "destructive" })
         } finally {
             setIsLoading(false)
@@ -74,7 +75,7 @@ export default function ManageUpcomingLessons() {
             setLessons(lessons.filter(lesson => lesson.id !== lessonId))
             toast({ title: "Success", description: "Lesson cancelled successfully." })
         } catch (error) {
-            console.error('Error cancelling lesson:', error)
+            logger.error('Error cancelling lesson:', error)
             toast({ title: "Error", description: "Failed to cancel lesson. Please try again.", variant: "destructive" })
         }
     }
@@ -95,13 +96,13 @@ export default function ManageUpcomingLessons() {
                 startTime: editingLesson.startTime,
                 endTime: editingLesson.endTime
             })
-            setLessons(lessons.map(lesson => 
+            setLessons(lessons.map(lesson =>
                 lesson.id === editingLesson.id ? editingLesson : lesson
             ))
             setIsEditing(false)
             toast({ title: "Success", description: "Lesson updated successfully." })
         } catch (error) {
-            console.error('Error updating lesson:', error)
+            logger.error('Error updating lesson:', error)
             toast({ title: "Error", description: "Failed to update lesson. Please try again.", variant: "destructive" })
         }
     }
@@ -123,7 +124,7 @@ export default function ManageUpcomingLessons() {
                 toast({ title: "Success", description: "Reschedule request approved." })
             }
         } catch (error) {
-            console.error('Error approving reschedule:', error)
+            logger.error('Error approving reschedule:', error)
             toast({ title: "Error", description: "Failed to approve reschedule. Please try again.", variant: "destructive" })
         }
     }
@@ -139,7 +140,7 @@ export default function ManageUpcomingLessons() {
             fetchLessons() // Refresh the lessons list
             toast({ title: "Success", description: "Reschedule request rejected." })
         } catch (error) {
-            console.error('Error rejecting reschedule:', error)
+            logger.error('Error rejecting reschedule:', error)
             toast({ title: "Error", description: "Failed to reject reschedule. Please try again.", variant: "destructive" })
         }
     }
@@ -205,7 +206,7 @@ export default function ManageUpcomingLessons() {
                                 <Input
                                     id="title"
                                     value={editingLesson.title}
-                                    onChange={(e) => setEditingLesson({...editingLesson, title: e.target.value})}
+                                    onChange={(e) => setEditingLesson({ ...editingLesson, title: e.target.value })}
                                     required
                                 />
                             </div>
@@ -215,7 +216,7 @@ export default function ManageUpcomingLessons() {
                                     id="date"
                                     type="date"
                                     value={editingLesson.date}
-                                    onChange={(e) => setEditingLesson({...editingLesson, date: e.target.value})}
+                                    onChange={(e) => setEditingLesson({ ...editingLesson, date: e.target.value })}
                                     required
                                 />
                             </div>
@@ -225,7 +226,7 @@ export default function ManageUpcomingLessons() {
                                     id="startTime"
                                     type="time"
                                     value={editingLesson.startTime}
-                                    onChange={(e) => setEditingLesson({...editingLesson, startTime: e.target.value})}
+                                    onChange={(e) => setEditingLesson({ ...editingLesson, startTime: e.target.value })}
                                     required
                                 />
                             </div>
@@ -235,7 +236,7 @@ export default function ManageUpcomingLessons() {
                                     id="endTime"
                                     type="time"
                                     value={editingLesson.endTime}
-                                    onChange={(e) => setEditingLesson({...editingLesson, endTime: e.target.value})}
+                                    onChange={(e) => setEditingLesson({ ...editingLesson, endTime: e.target.value })}
                                     required
                                 />
                             </div>

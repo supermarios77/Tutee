@@ -59,7 +59,7 @@ export default function BookLessonPage() {
       toast({ title: "Success", description: "Lesson booked successfully." })
       router.push('/student-dashboard')
     } catch (error) {
-      console.error('Error booking lesson:', error)
+      logger.error('Error booking lesson:', error)
       toast({ title: "Error", description: "Failed to book lesson. Please try again.", variant: "destructive" })
     } finally {
       setIsLoading(false)

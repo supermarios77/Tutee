@@ -35,7 +35,7 @@ export default function BookingPage() {
         router.push('/onboarding')
       }
     } catch (error) {
-      console.error('Error checking onboarding status:', error)
+      logger.error('Error checking onboarding status:', error)
     } finally {
       setIsLoading(false)
     }
@@ -44,7 +44,7 @@ export default function BookingPage() {
   if (!isLoaded || !isSignedIn || isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-900 to-black">
-        <motion.div 
+        <motion.div
           className="text-center text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

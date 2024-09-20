@@ -38,7 +38,7 @@ const PreviousLessons = () => {
       } as Booking));
       setLessons(fetchedLessons);
     } catch (error) {
-      console.error('Error fetching previous lessons:', error);
+      logger.error('Error fetching previous lessons:', error);
     } finally {
       setIsLoading(false);
     }

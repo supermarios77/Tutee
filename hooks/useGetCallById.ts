@@ -9,7 +9,7 @@ export const useGetCallById = (id: string | string[]) => {
 
   useEffect(() => {
     if (!client) return;
-    
+
     const loadCall = async () => {
       try {
         // https://getstream.io/video/docs/react/guides/querying-calls/#filters
@@ -19,7 +19,7 @@ export const useGetCallById = (id: string | string[]) => {
 
         setIsCallLoading(false);
       } catch (error) {
-        console.error(error);
+        logger.error(error);
         setIsCallLoading(false);
       }
     };

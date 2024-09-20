@@ -64,7 +64,7 @@ export default function TeacherAvailability() {
       await setDoc(doc(db, 'teacherAvailability', user.id), availability)
       toast({ title: "Success", description: "Availability updated successfully." })
     } catch (error) {
-      console.error('Error saving availability:', error)
+      logger.error('Error saving availability:', error)
       toast({ title: "Error", description: "Failed to update availability. Please try again.", variant: "destructive" })
     }
   }

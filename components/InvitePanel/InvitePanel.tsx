@@ -115,7 +115,7 @@ const useCopyInviteLink = () => {
     const url = window.location.href;
     navigator.clipboard
       .writeText(url)
-      .catch((err) => console.error('could not copy invite link', err))
+      .catch((err) => logger.error('could not copy invite link', err))
       .finally(() => setIsCopied(true));
   }, []);
 

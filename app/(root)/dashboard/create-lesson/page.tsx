@@ -59,7 +59,7 @@ export default function CreateLesson() {
       toast({ title: "Lesson created successfully" })
       router.push('/dashboard')
     } catch (error) {
-      console.error('Error creating lesson:', error)
+      logger.error('Error creating lesson:', error)
       toast({ title: "Failed to create lesson", description: "Please try again" })
     }
   }

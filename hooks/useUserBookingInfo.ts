@@ -25,7 +25,7 @@ export function useUserBookingInfo() {
 
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
-          
+
           // Fetch user's bookings
           const bookingsQuery = query(
             collection(db, 'bookings'),
@@ -48,7 +48,7 @@ export function useUserBookingInfo() {
           });
         }
       } catch (error) {
-        console.error('Error fetching user booking info:', error);
+        logger.error('Error fetching user booking info:', error);
       } finally {
         setIsLoading(false);
       }

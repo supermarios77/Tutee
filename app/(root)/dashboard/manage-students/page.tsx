@@ -43,7 +43,7 @@ export default function ManageStudents() {
             } as User))
             setStudents(studentsData)
         } catch (error) {
-            console.error('Error fetching students:', error)
+            logger.error('Error fetching students:', error)
             toast({ title: "Error", description: "Failed to fetch students. Please try again.", variant: "destructive" })
         } finally {
             setIsLoading(false)
@@ -53,17 +53,17 @@ export default function ManageStudents() {
     const handleUpdateStudent = async (studentId: string, updates: Partial<User>) => {
         try {
             await updateDoc(doc(db, 'users', studentId), updates)
-            setStudents(students.map(student => 
+            setStudents(students.map(student =>
                 student.id === studentId ? { ...student, ...updates } : student
             ))
             toast({ title: "Success", description: "Student updated successfully." })
         } catch (error) {
-            console.error('Error updating student:', error)
+            logger.error('Error updating student:', error)
             toast({ title: "Error", description: "Failed to update student. Please try again.", variant: "destructive" })
         }
     }
 
-    const filteredStudents = students.filter(student => 
+    const filteredStudents = students.filter(student =>
         student.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email?.toLowerCase().includes(searchTerm.toLowerCase())

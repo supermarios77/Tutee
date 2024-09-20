@@ -64,7 +64,7 @@ export default function StudentUpcomingLessons() {
       setLessons(fetchedLessons)
       console.log("Fetched lessons:", fetchedLessons) // Debug log
     } catch (error) {
-      console.error('Error fetching lessons:', error)
+      logger.error('Error fetching lessons:', error)
       toast({ title: "Error", description: "Failed to fetch lessons. Please try again.", variant: "destructive" })
     } finally {
       setIsLoading(false)
@@ -92,15 +92,15 @@ export default function StudentUpcomingLessons() {
         requestedDate: newDate,
         requestedTime: newTime
       })
-      setLessons(lessons.map(lesson => 
-        lesson.id === reschedulingLesson.id 
-          ? {...lesson, status: 'rescheduling', requestedDate: newDate, requestedTime: newTime} 
+      setLessons(lessons.map(lesson =>
+        lesson.id === reschedulingLesson.id
+          ? { ...lesson, status: 'rescheduling', requestedDate: newDate, requestedTime: newTime }
           : lesson
       ))
       setIsRescheduling(false)
       toast({ title: "Success", description: "Reschedule request submitted successfully." })
     } catch (error) {
-      console.error('Error submitting reschedule request:', error)
+      logger.error('Error submitting reschedule request:', error)
       toast({ title: "Error", description: "Failed to submit reschedule request. Please try again.", variant: "destructive" })
     }
   }

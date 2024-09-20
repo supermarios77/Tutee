@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const apiSecret = process.env.STREAM_SECRET_KEY;
 
     if (!apiKey || !apiSecret) {
-      console.error('Stream API key or secret is not defined');
+      logger.error('Stream API key or secret is not defined');
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ token });
   } catch (error) {
-    console.error('Error generating token:', error);
+    logger.error('Error generating token:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

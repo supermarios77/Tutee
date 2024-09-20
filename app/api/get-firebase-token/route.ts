@@ -23,7 +23,7 @@ export async function POST() {
     const token = await getAuth().createCustomToken(userId);
     return NextResponse.json({ token });
   } catch (error) {
-    console.error('Error creating custom token:', error);
+    logger.error('Error creating custom token:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
