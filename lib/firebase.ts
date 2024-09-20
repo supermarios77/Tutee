@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth, signInWithCustomToken } from 'firebase/auth';
 import logger from '@/lib/logger';
 
 const firebaseConfig = {
@@ -13,9 +13,22 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let app;
+let db: Firestore;
+let auth: Auth;
+
+try {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+    logger.info('Firebase initialized successfully');
+  } else {
+    app = getApps()[0];
+  }
+  db = getFirestore(app);
+  auth = getAuth(app);
+} catch (error) {
+  logger.error('Error initializing Firebase:', error);
+}
 
 export { db, auth };
 

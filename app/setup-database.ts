@@ -1,8 +1,9 @@
 import { getFirestore } from 'firebase-admin/firestore';
 import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting, TimeSlot } from '@/types/booking';
-import { adminDb } from '@/lib/firebase-admin';
+import { db as adminDb } from '@/lib/firebase-admin';
 import Stripe from 'stripe';
 import { addDays, format, setHours, setMinutes, startOfDay } from 'date-fns';
+import logger from '@/lib/logger';
 
 const db = adminDb;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
@@ -189,7 +190,7 @@ async function clearAllData(): Promise<void> {
     const collectionRef = db.collection(collectionName);
     const snapshot = await collectionRef.get();
     const batch = db.batch();
-    snapshot.docs.forEach((doc) => {
+    snapshot.docs.forEach((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
       batch.delete(doc.ref);
     });
     await batch.commit();
@@ -311,10 +312,12 @@ async function createAvailableSlots(): Promise<void> {
   }
 }
 
-export async function setupDatabase(): Promise<void> {
+export async function setupDatabase(reset: boolean = false): Promise<void> {
   try {
-    console.log('Clearing old data...');
-    await clearAllData();
+    if (reset) {
+      console.log('Clearing old data...');
+      await clearAllData();
+    }
 
     console.log('Populating teachers...');
     await populateTeachers();

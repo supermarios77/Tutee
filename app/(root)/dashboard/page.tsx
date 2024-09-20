@@ -382,7 +382,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ openCreateLessonModal, rout
         <Button variant="outline" onClick={openCreateLessonModal}>
           <Plus className="mr-2 h-4 w-4" /> Create Lesson
         </Button>
-        <Button variant="outline" onClick={() => router.push('/dashboard/students')}>
+        <Button variant="outline" onClick={() => router.push('/dashboard/manage-students')}>
           <Users className="mr-2 h-4 w-4" /> Manage Students
         </Button>
         <Button variant="outline" onClick={() => router.push('/dashboard/settings')}>
