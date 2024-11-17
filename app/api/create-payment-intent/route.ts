@@ -1,31 +1,67 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { auth } from '@clerk/nextjs';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20', // Updated to the latest stable version
+  apiVersion: '2023-10-16',
 });
 
 export async function POST(request: Request) {
   try {
-    const { amount, currency } = await request.json();
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { amount, currency, subscriptionPlanId } = await request.json();
 
     if (!amount || !currency) {
       return NextResponse.json({ error: 'Amount and currency are required' }, { status: 400 });
     }
 
-    // Ensure we're using the correct mode (test or live)
-    const mode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'test' : 'live';
-    console.log(`Using Stripe ${mode} mode`);
+    // Get or create Stripe customer
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    const userData = userDoc.data();
+    
+    let customerId = userData?.stripeCustomerId;
+    
+    if (!customerId) {
+      // Create a new customer
+      const customer = await stripe.customers.create({
+        metadata: {
+          userId: userId,
+        },
+      });
+      customerId = customer.id;
+      // Save customer ID to user document
+      // This should be done in a transaction or through a separate API
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency,
-      metadata: { mode }, // Add metadata to help with debugging
+      customer: customerId,
+      metadata: {
+        userId,
+        subscriptionPlanId,
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      setup_future_usage: 'off_session', // Enable future payments
     });
 
-    return NextResponse.json({ clientSecret: paymentIntent.client_secret, mode });
+    return NextResponse.json({ 
+      clientSecret: paymentIntent.client_secret,
+      customerId,
+    });
   } catch (error) {
     console.error('Error creating payment intent:', error);
-    return NextResponse.json({ error: 'Error creating payment intent' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error creating payment intent' }, 
+      { status: 500 }
+    );
   }
 }
