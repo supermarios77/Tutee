@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs,
+  doc,
+  getDoc,
+  DocumentData 
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,8 +38,9 @@ export function InvoiceHistory() {
 
       try {
         // Get user's Stripe customer ID
-        const userDoc = await getDocs(doc(db, 'users', user.id));
-        const userData = userDoc.data();
+        const userDocRef = doc(db, 'users', user.id);
+        const userDocSnap = await getDoc(userDocRef);
+        const userData = userDocSnap.data() as DocumentData | undefined;
         const customerId = userData?.stripeCustomerId;
 
         if (!customerId) {
