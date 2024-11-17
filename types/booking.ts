@@ -90,3 +90,19 @@ export interface TimeSlot {
   start: Date;
   end: Date;
 }
+
+interface StripeSubscription {
+  id: string;
+  customerId: string;
+  status: string;
+  currentPeriodEnd: Date;
+  // ... other Stripe-specific fields
+}
+
+interface PaymentHistory {
+  id: string;
+  amount: number;
+  status: string;
+  createdAt: Date;
+  // ... other payment fields
+}
