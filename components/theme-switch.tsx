@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { FC } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { SwitchProps, useSwitch } from "@nextui-org/switch";
-import { useTheme } from "next-themes";
-import { useIsSSR } from "@react-aria/ssr";
-import clsx from "clsx";
-import useSound from "use-sound";
+import { FC } from 'react';
+import { VisuallyHidden } from '@react-aria/visually-hidden';
+import { SwitchProps, useSwitch } from '@nextui-org/switch';
+import { useTheme } from 'next-themes';
+import { useIsSSR } from '@react-aria/ssr';
+import clsx from 'clsx';
+import useSound from 'use-sound';
 
-import soundFile from "/public/assets/audio/mouse-click.mp3";
+import soundFile from '/public/assets/audio/mouse-click.mp3';
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons/icons";
+import { SunFilledIcon, MoonFilledIcon } from '@/components/icons/icons';
 
 export interface ThemeSwitchProps {
   className?: string;
-  classNames?: SwitchProps["classNames"];
+  classNames?: SwitchProps['classNames'];
 }
 
 export const ThemeSwitch: FC<ThemeSwitchProps> = ({
@@ -26,7 +26,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
   const [play] = useSound(soundFile);
 
   const onChange = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
+    theme === 'light' ? setTheme('dark') : setTheme('light');
     play();
   };
 
@@ -38,9 +38,9 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
     getInputProps,
     getWrapperProps,
   } = useSwitch({
-    isSelected: theme === "light" || isSSR,
-    "aria-label": `Switch to ${
-      theme === "light" || isSSR ? "dark" : "light"
+    isSelected: theme === 'light' || isSSR,
+    'aria-label': `Switch to ${
+      theme === 'light' || isSSR ? 'dark' : 'light'
     } mode`,
     onChange,
   });
@@ -49,9 +49,9 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
     <Component
       {...getBaseProps({
         className: clsx(
-          "px-px transition-opacity hover:opacity-80 cursor-pointer",
+          'px-px transition-opacity hover:opacity-80 cursor-pointer',
           className,
-          classNames?.base
+          classNames?.base,
         ),
       })}
     >
@@ -63,17 +63,17 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
         className={slots.wrapper({
           class: clsx(
             [
-              "w-auto h-auto",
-              "bg-transparent",
-              "rounded-lg",
-              "flex items-center justify-center",
-              "group-data-[selected=true]:bg-transparent",
-              "!text-default-500",
-              "pt-px",
-              "px-0",
-              "mx-0",
+              'w-auto h-auto',
+              'bg-transparent',
+              'rounded-lg',
+              'flex items-center justify-center',
+              'group-data-[selected=true]:bg-transparent',
+              '!text-default-500',
+              'pt-px',
+              'px-0',
+              'mx-0',
             ],
-            classNames?.wrapper
+            classNames?.wrapper,
           ),
         })}
       >

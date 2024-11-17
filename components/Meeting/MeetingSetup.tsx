@@ -26,7 +26,7 @@ const MeetingSetup = ({
 
   if (!call) {
     throw new Error(
-      'useStreamCall must be used within a StreamCall component.'
+      'useStreamCall must be used within a StreamCall component.',
     );
   }
 

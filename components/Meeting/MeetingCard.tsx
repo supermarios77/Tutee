@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Image from "next/image";
+import Image from 'next/image';
 
-import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { avatarImages } from "@/constants";
-import { useToast } from "../ui/use-toast";
+import { cn } from '@/lib/utils';
+import { Button } from '../ui/button';
+import { avatarImages } from '@/constants';
+import { useToast } from '../ui/use-toast';
 
 interface MeetingCardProps {
   title: string;
@@ -41,7 +41,7 @@ const MeetingCard = ({
           </div>
         </div>
       </article>
-      <article className={cn("flex justify-center relative", {})}>
+      <article className={cn('flex justify-center relative', {})}>
         <div className="relative flex w-full max-sm:hidden">
           {avatarImages.map((img, index) => (
             <Image
@@ -50,7 +50,7 @@ const MeetingCard = ({
               alt="attendees"
               width={40}
               height={40}
-              className={cn("rounded-full", { absolute: index > 0 })}
+              className={cn('rounded-full', { absolute: index > 0 })}
               style={{ top: 0, left: index * 28 }}
             />
           ))}
@@ -70,7 +70,7 @@ const MeetingCard = ({
               onClick={() => {
                 navigator.clipboard.writeText(link);
                 toast({
-                  title: "Link Copied",
+                  title: 'Link Copied',
                 });
               }}
               className="bg-dark-4 px-6"

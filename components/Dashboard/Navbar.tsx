@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { SignedIn, UserButton } from '@clerk/nextjs'
-import { Menu, X, Settings, LogOut } from 'lucide-react'
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { SignedIn, UserButton } from '@clerk/nextjs';
+import { Menu, X, Settings, LogOut } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,11 +14,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <nav className="fixed z-50 w-full bg-white dark:bg-gray-900 shadow-sm">
@@ -39,13 +39,16 @@ export default function Navbar() {
             <SignedIn>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <UserButton
                       afterSignOutUrl="/sign-in"
                       appearance={{
                         elements: {
-                          avatarBox: "h-8 w-8"
-                        }
+                          avatarBox: 'h-8 w-8',
+                        },
                       }}
                     />
                   </Button>
@@ -68,13 +71,20 @@ export default function Navbar() {
           <div className="flex items-center sm:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-10 w-10"
+                >
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
                 <nav className="flex flex-col space-y-4">
-                  <Link href="/settings" className="flex items-center space-x-2">
+                  <Link
+                    href="/settings"
+                    className="flex items-center space-x-2"
+                  >
                     <Settings className="h-5 w-5" />
                     <span>Settings</span>
                   </Link>
@@ -83,8 +93,8 @@ export default function Navbar() {
                       afterSignOutUrl="/sign-in"
                       appearance={{
                         elements: {
-                          avatarBox: "h-12 w-12"
-                        }
+                          avatarBox: 'h-12 w-12',
+                        },
                       }}
                     />
                   </SignedIn>
@@ -95,5 +105,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

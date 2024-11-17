@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CreditCard, Lock } from 'lucide-react';
@@ -12,7 +19,12 @@ interface PaymentFormProps {
   currency: string;
 }
 
-export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, amount, currency }) => {
+export const PaymentForm: React.FC<PaymentFormProps> = ({
+  clientSecret,
+  onSuccess,
+  amount,
+  currency,
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +42,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSucces
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardElement)!,
-      }
+      },
     });
 
     if (result.error) {
@@ -53,7 +65,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSucces
       <form onSubmit={handleSubmit}>
         <CardContent>
           <div className="mb-6">
-            <label htmlFor="card-element" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="card-element"
+              className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Card Details
             </label>
             <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
@@ -78,7 +93,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSucces
           </div>
           <div className="text-center mb-4">
             <p className="text-2xl font-bold">
-              Total: {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount / 100)}
+              Total:{' '}
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency,
+              }).format(amount / 100)}
             </p>
           </div>
           {error && (
@@ -102,7 +121,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSucces
             ) : (
               <>
                 <Lock className="mr-2 h-6 w-6" />
-                Pay {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount / 100)}
+                Pay{' '}
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: currency,
+                }).format(amount / 100)}
               </>
             )}
           </Button>

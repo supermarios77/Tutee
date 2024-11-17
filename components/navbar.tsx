@@ -6,7 +6,13 @@ import { siteConfig } from '@/config/site';
 import NextLink from 'next/link';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { LanguageSwitcher } from './lang-switcher';
-import { SignedIn, SignedOut, UserButton, useUser, useClerk } from '@clerk/nextjs';
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+  useClerk,
+} from '@clerk/nextjs';
 import { BookOpenIcon, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -17,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
 interface NavbarLinkProps {
   href: string;
@@ -71,7 +77,9 @@ export const Navbar = () => {
               <motion.div whileHover={{ rotate: 10 }} whileTap={{ scale: 0.9 }}>
                 <BookOpenIcon className="text-primary w-8 h-8 md:w-10 md:h-10" />
               </motion.div>
-              <p className="font-bold text-xl md:text-3xl text-primary notranslate">Tutee</p>
+              <p className="font-bold text-xl md:text-3xl text-primary notranslate">
+                Tutee
+              </p>
             </NextLink>
           </div>
 
@@ -92,8 +100,16 @@ export const Navbar = () => {
             </div>
             <SignedOut>
               <div className="hidden md:block">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button asChild variant="default" size="lg" className="text-lg font-semibold bg-primary/90 hover:bg-primary/100 text-white">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    asChild
+                    variant="default"
+                    size="lg"
+                    className="text-lg font-semibold bg-primary/90 hover:bg-primary/100 text-white"
+                  >
                     <NextLink href="/sign-up">Sign Up</NextLink>
                   </Button>
                 </motion.div>
@@ -103,13 +119,16 @@ export const Navbar = () => {
               <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button
+                      variant="ghost"
+                      className="relative h-10 w-10 rounded-full"
+                    >
                       <UserButton
                         afterSignOutUrl="/"
                         appearance={{
                           elements: {
-                            avatarBox: "h-10 w-10"
-                          }
+                            avatarBox: 'h-10 w-10',
+                          },
                         }}
                       />
                     </Button>
@@ -131,7 +150,12 @@ export const Navbar = () => {
             </SignedIn>
             <div className="md:hidden flex items-center">
               <SignedOut>
-                <Button asChild variant="default" size="sm" className="text-sm font-semibold bg-primary/90 hover:bg-primary/100 text-white mr-2">
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="text-sm font-semibold bg-primary/90 hover:bg-primary/100 text-white mr-2"
+                >
                   <NextLink href="/sign-up">Sign Up</NextLink>
                 </Button>
               </SignedOut>
@@ -140,8 +164,8 @@ export const Navbar = () => {
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: "h-8 w-8 mr-2"
-                    }
+                      avatarBox: 'h-8 w-8 mr-2',
+                    },
                   }}
                 />
               </SignedIn>
@@ -191,27 +215,36 @@ export const Navbar = () => {
                 </motion.div>
               ))}
               <SignedIn>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <NavbarLink href="#" onClick={() => { handleDashboardClick(); toggleMobileMenu(); }}>
+                <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+                  <NavbarLink
+                    href="#"
+                    onClick={() => {
+                      handleDashboardClick();
+                      toggleMobileMenu();
+                    }}
+                  >
                     Dashboard
                   </NavbarLink>
                 </motion.div>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <NavbarLink href="#" onClick={() => { handleProfileClick(); toggleMobileMenu(); }}>
+                <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+                  <NavbarLink
+                    href="#"
+                    onClick={() => {
+                      handleProfileClick();
+                      toggleMobileMenu();
+                    }}
+                  >
                     Account
                   </NavbarLink>
                 </motion.div>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <NavbarLink href="#" onClick={() => { handleSignOut(); toggleMobileMenu(); }}>
+                <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+                  <NavbarLink
+                    href="#"
+                    onClick={() => {
+                      handleSignOut();
+                      toggleMobileMenu();
+                    }}
+                  >
                     Sign out
                   </NavbarLink>
                 </motion.div>

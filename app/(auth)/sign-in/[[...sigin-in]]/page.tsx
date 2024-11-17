@@ -1,33 +1,38 @@
-'use client'
+'use client';
 
-import { SignIn } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
-import { BookOpenIcon, GlobeIcon } from 'lucide-react'
-import Link from 'next/link'
-import { useState } from 'react'
+import { SignIn } from '@clerk/nextjs';
+import { motion } from 'framer-motion';
+import { BookOpenIcon, GlobeIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function SignInPage() {
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
   return (
-    <main className="min-h-screen w-full bg-hero-gradient flex items-center justify-center p-4" aria-labelledby="signin-title">
+    <main
+      className="min-h-screen w-full bg-hero-gradient flex items-center justify-center p-4"
+      aria-labelledby="signin-title"
+    >
       <div className="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left side: Animated background and content */}
-          <motion.div 
+          <motion.div
             className="md:w-1/2 bg-blue-600 p-8 flex flex-col justify-center items-center text-white"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 id="signin-title" className="text-3xl font-bold mb-4">Welcome Back to Tutee</h1>
+            <h1 id="signin-title" className="text-3xl font-bold mb-4">
+              Welcome Back to Tutee
+            </h1>
             <p className="text-lg mb-6 text-center">
               Continue your journey to English fluency!
             </p>
             <div className="flex justify-center space-x-4">
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                 className="bg-blue-500 rounded-full p-3"
                 aria-label="Rotating book icon"
               >
@@ -35,7 +40,7 @@ export default function SignInPage() {
               </motion.div>
               <motion.div
                 animate={{ rotate: -360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                 className="bg-blue-500 rounded-full p-3"
                 aria-label="Rotating globe icon"
               >
@@ -45,13 +50,13 @@ export default function SignInPage() {
           </motion.div>
 
           {/* Right side: Sign In form */}
-          <motion.div 
+          <motion.div
             className="md:w-1/2 p-8 relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <SignIn 
+            <SignIn
               appearance={{
                 elements: {
                   formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
@@ -65,7 +70,10 @@ export default function SignInPage() {
               signUpUrl="/sign-up"
             />
             {error && (
-              <p className="mt-4 text-center text-sm text-red-600 dark:text-red-400" role="alert">
+              <p
+                className="mt-4 text-center text-sm text-red-600 dark:text-red-400"
+                role="alert"
+              >
                 {error}
               </p>
             )}
@@ -79,5 +87,5 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

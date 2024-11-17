@@ -17,27 +17,37 @@ export const SelectTimes: React.FC<SelectTimesProps> = ({
   selectedTeacherId,
   selectedSlots,
   setSelectedSlots,
-  availableSlots
+  availableSlots,
 }) => {
   if (availableSlots.length === 0) {
-    return <p>No available slots for the selected dates. Please choose different dates or a different teacher.</p>;
+    return (
+      <p>
+        No available slots for the selected dates. Please choose different dates
+        or a different teacher.
+      </p>
+    );
   }
 
   return (
     <>
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Select Your Times</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+        Select Your Times
+      </h2>
       {selectedDates.map((date, dateIndex) => (
         <Card key={dateIndex} className="mb-4">
           <CardHeader>
             <CardTitle>{format(date, 'EEEE, MMMM d')}</CardTitle>
           </CardHeader>
           <CardContent>
-            {availableSlots.filter(slot => isSameDay(slot.start, date)).length === 0 ? (
-              <p>No available slots for this date. Please select another date.</p>
+            {availableSlots.filter((slot) => isSameDay(slot.start, date))
+              .length === 0 ? (
+              <p>
+                No available slots for this date. Please select another date.
+              </p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {availableSlots
-                  .filter(slot => isSameDay(slot.start, date))
+                  .filter((slot) => isSameDay(slot.start, date))
                   .map((slot, slotIndex) => (
                     <Button
                       key={slotIndex}
@@ -46,13 +56,17 @@ export const SelectTimes: React.FC<SelectTimesProps> = ({
                         newSelectedSlots[dateIndex] = slot;
                         setSelectedSlots(newSelectedSlots);
                       }}
-                      variant={selectedSlots[dateIndex] === slot ? "default" : "outline"}
+                      variant={
+                        selectedSlots[dateIndex] === slot
+                          ? 'default'
+                          : 'outline'
+                      }
                       className="text-sm"
                     >
-                      {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
+                      {format(slot.start, 'HH:mm')} -{' '}
+                      {format(slot.end, 'HH:mm')}
                     </Button>
-                  ))
-                }
+                  ))}
               </div>
             )}
           </CardContent>
@@ -63,7 +77,8 @@ export const SelectTimes: React.FC<SelectTimesProps> = ({
         <ul className="list-disc list-inside">
           {selectedSlots.map((slot, index) => (
             <li key={index}>
-              {format(selectedDates[index], 'EEEE, MMMM d')}: {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
+              {format(selectedDates[index], 'EEEE, MMMM d')}:{' '}
+              {format(slot.start, 'HH:mm')} - {format(slot.end, 'HH:mm')}
             </li>
           ))}
         </ul>

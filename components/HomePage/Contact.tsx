@@ -1,46 +1,57 @@
-'use client'
+'use client';
 
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Mail, MessageCircle, Facebook, Twitter, Instagram, Linkedin, BookOpen } from "lucide-react";
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import {
+  Mail,
+  MessageCircle,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  BookOpen,
+} from 'lucide-react';
 
 const Contact = () => {
   const imageUrl =
-    "https://images.unsplash.com/photo-1572021335469-31706a17aaef?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+    'https://images.unsplash.com/photo-1572021335469-31706a17aaef?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   const contactMethods = [
     {
       icon: Mail,
-      title: "Email",
-      value: "info@tutee.co.uk",
-      href: "mailto:info@tutee.co.uk",
+      title: 'Email',
+      value: 'info@tutee.co.uk',
+      href: 'mailto:info@tutee.co.uk',
     },
     {
       icon: MessageCircle,
-      title: "Telegram",
-      value: "@tuteeuk",
-      href: "https://t.me/+@TUTEEUK",
+      title: 'Telegram',
+      value: '@tuteeuk',
+      href: 'https://t.me/+@TUTEEUK',
     },
   ];
 
   const footerLinks = [
-    { name: "About", href: "#about" },
-    { name: "Services", href: "#services" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Contact", href: "#contact" },
+    { name: 'About', href: '#about' },
+    { name: 'Services', href: '#services' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'Contact', href: '#contact' },
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: "#" },
-    { icon: Twitter, href: "#" },
-    { icon: Instagram, href: "#" },
-    { icon: Linkedin, href: "#" },
+    { icon: Facebook, href: '#' },
+    { icon: Twitter, href: '#' },
+    { icon: Instagram, href: '#' },
+    { icon: Linkedin, href: '#' },
   ];
 
   return (
-    <footer className="relative overflow-hidden bg-gradient-to-b from-indigo-900 to-blue-900 dark:from-gray-900 dark:to-black" id="contact">
+    <footer
+      className="relative overflow-hidden bg-gradient-to-b from-indigo-900 to-blue-900 dark:from-gray-900 dark:to-black"
+      id="contact"
+    >
       <div className="container px-6 py-16 mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -52,7 +63,8 @@ const Contact = () => {
             Get in Touch
           </h2>
           <p className="mt-4 text-lg text-gray-300">
-            We're here to help. Reach out to us through any of the following methods.
+            We're here to help. Reach out to us through any of the following
+            methods.
           </p>
         </motion.div>
 
@@ -74,7 +86,7 @@ const Contact = () => {
                 </h3>
               </div>
               <p className="mt-4 text-lg font-medium text-blue-500 dark:text-blue-400">
-                <a 
+                <a
                   href={method.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -148,8 +160,12 @@ const Contact = () => {
 
       {/* Decorative element */}
       <div className="absolute bottom-0 left-0 -mb-16 -ml-16 transform rotate-180">
-        <svg className="w-32 h-32 text-blue-400 opacity-20" fill="currentColor" viewBox="0 0 256 256">
-          <path d="M128,0C57.3,0,0,57.3,0,128s57.3,128,128,128s128-57.3,128-128S198.7,0,128,0z M128,224c-52.9,0-96-43.1-96-96 s43.1-96,96-96s96,43.1,96,96S180.9,224,128,224z"/>
+        <svg
+          className="w-32 h-32 text-blue-400 opacity-20"
+          fill="currentColor"
+          viewBox="0 0 256 256"
+        >
+          <path d="M128,0C57.3,0,0,57.3,0,128s57.3,128,128,128s128-57.3,128-128S198.7,0,128,0z M128,224c-52.9,0-96-43.1-96-96 s43.1-96,96-96s96,43.1,96,96S180.9,224,128,224z" />
         </svg>
       </div>
     </footer>

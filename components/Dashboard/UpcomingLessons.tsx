@@ -10,7 +10,10 @@ interface UpcomingLessonsProps {
   isLoading: boolean;
 }
 
-const UpcomingLessons: React.FC<UpcomingLessonsProps> = ({ lessons, isLoading }) => {
+const UpcomingLessons: React.FC<UpcomingLessonsProps> = ({
+  lessons,
+  isLoading,
+}) => {
   if (isLoading) {
     return <div>Loading upcoming lessons...</div>;
   }
@@ -25,10 +28,14 @@ const UpcomingLessons: React.FC<UpcomingLessonsProps> = ({ lessons, isLoading })
       {lessons.map((lesson) => (
         <Card key={lesson.id}>
           <CardHeader>
-            <CardTitle>{format(new Date(lesson.date), 'MMMM d, yyyy')}</CardTitle>
+            <CardTitle>
+              {format(new Date(lesson.date), 'MMMM d, yyyy')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Time: {lesson.startTime} - {lesson.endTime}</p>
+            <p>
+              Time: {lesson.startTime} - {lesson.endTime}
+            </p>
             <p>Teacher: {lesson.teacherId}</p>
             <p>Type: {lesson.lessonType}</p>
             <Button asChild className="mt-2">

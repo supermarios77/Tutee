@@ -1,12 +1,20 @@
-import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { collection, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { useToast } from "@/components/ui/use-toast"
-import { checkForConflicts } from '@/utils/bookingUtils'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/components/ui/use-toast';
+import { checkForConflicts } from '@/utils/bookingUtils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Lesson {
   id: string;
@@ -20,99 +28,131 @@ interface Lesson {
 }
 
 export default function StudentUpcomingLessons() {
-  const { user } = useUser()
-  const [lessons, setLessons] = useState<Lesson[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRescheduling, setIsRescheduling] = useState(false)
-  const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
-  const [newDate, setNewDate] = useState('')
-  const [newTime, setNewTime] = useState('')
-  const { toast } = useToast()
+  const { user } = useUser();
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(
+    null,
+  );
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
-      fetchLessons()
+      fetchLessons();
     }
-  }, [user])
+  }, [user]);
 
   const fetchLessons = async () => {
-    if (!user) return
-    setIsLoading(true)
+    if (!user) return;
+    setIsLoading(true);
     try {
-      console.log("Fetching lessons for user:", user.id) // Debug log
-      const lessonsRef = collection(db, 'bookings')
+      console.log('Fetching lessons for user:', user.id); // Debug log
+      const lessonsRef = collection(db, 'bookings');
       const q = query(
         lessonsRef,
         where('studentId', '==', user.id),
         where('status', 'in', ['scheduled', 'rescheduling']),
         orderBy('date'),
-        orderBy('startTime')
-      )
-      const querySnapshot = await getDocs(q)
-      console.log("Query snapshot size:", querySnapshot.size) // Debug log
-      const fetchedLessons = querySnapshot.docs.map(doc => {
-        const data = doc.data()
-        console.log("Lesson data:", data) // Debug log
+        orderBy('startTime'),
+      );
+      const querySnapshot = await getDocs(q);
+      console.log('Query snapshot size:', querySnapshot.size); // Debug log
+      const fetchedLessons = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        console.log('Lesson data:', data); // Debug log
         return {
           id: doc.id,
           ...data,
           date: data.date, // Ensure date is properly formatted
           startTime: data.startTime,
           endTime: data.endTime,
-        } as Lesson
-      })
-      setLessons(fetchedLessons)
-      console.log("Fetched lessons:", fetchedLessons) // Debug log
+        } as Lesson;
+      });
+      setLessons(fetchedLessons);
+      console.log('Fetched lessons:', fetchedLessons); // Debug log
     } catch (error) {
-      console.error('Error fetching lessons:', error)
-      toast({ title: "Error", description: "Failed to fetch lessons. Please try again.", variant: "destructive" })
+      console.error('Error fetching lessons:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch lessons. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleRescheduleRequest = (lesson: Lesson) => {
-    setReschedulingLesson(lesson)
-    setIsRescheduling(true)
-  }
+    setReschedulingLesson(lesson);
+    setIsRescheduling(true);
+  };
 
-  const handleSubmitReschedule = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!reschedulingLesson) return
+  const handleSubmitReschedule = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+    if (!reschedulingLesson) return;
 
     try {
-      const hasConflict = await checkForConflicts(reschedulingLesson.teacherId, newDate, newTime, calculateEndTime(newTime))
+      const hasConflict = await checkForConflicts(
+        reschedulingLesson.teacherId,
+        newDate,
+        newTime,
+        calculateEndTime(newTime),
+      );
       if (hasConflict) {
-        toast({ title: "Error", description: "There is a scheduling conflict. Please choose a different time.", variant: "destructive" })
-        return
+        toast({
+          title: 'Error',
+          description:
+            'There is a scheduling conflict. Please choose a different time.',
+          variant: 'destructive',
+        });
+        return;
       }
 
       await updateDoc(doc(db, 'bookings', reschedulingLesson.id), {
         status: 'rescheduling',
         requestedDate: newDate,
-        requestedTime: newTime
-      })
-      setLessons(lessons.map(lesson => 
-        lesson.id === reschedulingLesson.id 
-          ? {...lesson, status: 'rescheduling', requestedDate: newDate, requestedTime: newTime} 
-          : lesson
-      ))
-      setIsRescheduling(false)
-      toast({ title: "Success", description: "Reschedule request submitted successfully." })
+        requestedTime: newTime,
+      });
+      setLessons(
+        lessons.map((lesson) =>
+          lesson.id === reschedulingLesson.id
+            ? {
+                ...lesson,
+                status: 'rescheduling',
+                requestedDate: newDate,
+                requestedTime: newTime,
+              }
+            : lesson,
+        ),
+      );
+      setIsRescheduling(false);
+      toast({
+        title: 'Success',
+        description: 'Reschedule request submitted successfully.',
+      });
     } catch (error) {
-      console.error('Error submitting reschedule request:', error)
-      toast({ title: "Error", description: "Failed to submit reschedule request. Please try again.", variant: "destructive" })
+      console.error('Error submitting reschedule request:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to submit reschedule request. Please try again.',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   function calculateEndTime(startTime: string): string {
-    const [hours, minutes] = startTime.split(':').map(Number)
-    const endDate = new Date(2000, 0, 1, hours + 1, minutes)
-    return endDate.toTimeString().slice(0, 5)
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endDate = new Date(2000, 0, 1, hours + 1, minutes);
+    return endDate.toTimeString().slice(0, 5);
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
@@ -127,10 +167,17 @@ export default function StudentUpcomingLessons() {
               <li key={lesson.id} className="mb-4 p-4 border rounded-lg">
                 <h3 className="font-semibold">{lesson.title}</h3>
                 <p>Date: {lesson.date}</p>
-                <p>Time: {lesson.startTime} - {lesson.endTime}</p>
+                <p>
+                  Time: {lesson.startTime} - {lesson.endTime}
+                </p>
                 <p>Status: {lesson.status}</p>
                 {lesson.status === 'scheduled' && (
-                  <Button onClick={() => handleRescheduleRequest(lesson)} className="mt-2">Request Reschedule</Button>
+                  <Button
+                    onClick={() => handleRescheduleRequest(lesson)}
+                    className="mt-2"
+                  >
+                    Request Reschedule
+                  </Button>
                 )}
               </li>
             ))}
@@ -160,5 +207,5 @@ export default function StudentUpcomingLessons() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

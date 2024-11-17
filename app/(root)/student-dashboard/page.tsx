@@ -1,16 +1,23 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, BookOpen, UserCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import StudentUpcomingLessons from '@/components/Dashboard/StudentUpcomingLessons';
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 import { Booking } from '@/types/booking';
 import BookLessonModal from '@/components/Dashboard/BookLessonModal';
 
@@ -40,7 +47,7 @@ export default function StudentDashboard() {
         where('date', '>=', new Date().toISOString().split('T')[0]),
         orderBy('date'),
         orderBy('startTime'),
-        limit(1)
+        limit(1),
       );
       const lessonsSnapshot = await getDocs(lessonsQuery);
       if (!lessonsSnapshot.empty) {
@@ -50,11 +57,10 @@ export default function StudentDashboard() {
       // Fetch total number of lessons
       const totalLessonsQuery = query(
         lessonsRef,
-        where('studentId', '==', user.id)
+        where('studentId', '==', user.id),
       );
       const totalLessonsSnapshot = await getDocs(totalLessonsQuery);
       setTotalLessons(totalLessonsSnapshot.size);
-
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -84,8 +90,12 @@ export default function StudentDashboard() {
         <ActionCard
           onClick={handleStartLesson}
           icon={<UserCircle2 className="h-12 w-12 mb-2 text-white" />}
-          title={nextLesson ? "Start Lesson" : "Join Meeting"}
-          description={nextLesson ? "Join your next scheduled lesson" : "No upcoming lessons"}
+          title={nextLesson ? 'Start Lesson' : 'Join Meeting'}
+          description={
+            nextLesson
+              ? 'Join your next scheduled lesson'
+              : 'No upcoming lessons'
+          }
           color="bg-blue-600"
           hoverColor="bg-blue-700"
           disabled={!nextLesson}
@@ -124,8 +134,16 @@ export default function StudentDashboard() {
 
 const WelcomeCard = () => {
   const now = new Date();
-  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const date = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
+  const time = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const date = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(now);
 
   return (
     <Card className="w-full bg-gradient-to-r from-blue-600 to-purple-600 border-none shadow-lg">
@@ -137,7 +155,16 @@ const WelcomeCard = () => {
   );
 };
 
-const ActionCard = ({ href, onClick, icon, title, description, color, hoverColor, disabled = false }: {
+const ActionCard = ({
+  href,
+  onClick,
+  icon,
+  title,
+  description,
+  color,
+  hoverColor,
+  disabled = false,
+}: {
   href?: string;
   onClick?: () => void;
   icon: React.ReactNode;
@@ -148,7 +175,9 @@ const ActionCard = ({ href, onClick, icon, title, description, color, hoverColor
   disabled?: boolean;
 }) => {
   const content = (
-    <Card className={`${color} group-hover:${hoverColor} transition-colors border-none shadow-lg h-full ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+    <Card
+      className={`${color} group-hover:${hoverColor} transition-colors border-none shadow-lg h-full ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
       <CardContent className="flex flex-col items-center justify-center p-6 h-full">
         {icon}
         <h3 className="text-lg font-semibold text-white">{title}</h3>
@@ -172,7 +201,15 @@ const ActionCard = ({ href, onClick, icon, title, description, color, hoverColor
   );
 };
 
-const StatsCard = ({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) => (
+const StatsCard = ({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+}) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>

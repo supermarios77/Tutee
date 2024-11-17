@@ -1,11 +1,20 @@
 import { getFirestore } from 'firebase-admin/firestore';
-import { Teacher, SubscriptionPlan, Booking, User, ActiveMeeting, TimeSlot } from '@/types/booking';
+import {
+  Teacher,
+  SubscriptionPlan,
+  Booking,
+  User,
+  ActiveMeeting,
+  TimeSlot,
+} from '@/types/booking';
 import { adminDb } from '@/lib/firebase-admin';
 import Stripe from 'stripe';
 import { addDays, format, setHours, setMinutes, startOfDay } from 'date-fns';
 
 const db = adminDb;
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+});
 
 const teachers: Teacher[] = [
   {
@@ -23,10 +32,10 @@ const teachers: Teacher[] = [
       Thursday: ['11:00-19:00'],
       Friday: ['09:00-17:00'],
       Saturday: [],
-      Sunday: []
+      Sunday: [],
     },
     bookings: [],
-    availableForBooking: true
+    availableForBooking: true,
   },
   {
     id: 'teacher2',
@@ -43,11 +52,11 @@ const teachers: Teacher[] = [
       Thursday: ['10:00-18:00'],
       Friday: ['10:00-18:00'],
       Saturday: [],
-      Sunday: []
+      Sunday: [],
     },
     bookings: [],
-    availableForBooking: true
-  }
+    availableForBooking: true,
+  },
 ];
 
 const subscriptionPlans: SubscriptionPlan[] = [
@@ -62,16 +71,16 @@ const subscriptionPlans: SubscriptionPlan[] = [
       'Up to 4 people',
       '2x30 minute sessions',
       'Includes resources',
-      'Interesting and interactive topics'
+      'Interesting and interactive topics',
     ],
     sessionType: 'group',
     sessionsPerWeek: 2,
-    minutesPerSession: 30
+    minutesPerSession: 30,
   },
   {
     id: 'one-to-one-sessions',
     name: 'One To One Sessions',
-    price: 70.00,
+    price: 70.0,
     currency: 'USD',
     interval: 'month',
     description: '1 hour a week of personalized tutoring',
@@ -79,12 +88,12 @@ const subscriptionPlans: SubscriptionPlan[] = [
       '1 hour a week',
       'Split sessions into 2x30min classes',
       'Resources for extra learning included',
-      'Tailored teaching approach'
+      'Tailored teaching approach',
     ],
     sessionType: 'individual',
     sessionsPerWeek: 1,
-    minutesPerSession: 60
-  }
+    minutesPerSession: 60,
+  },
 ];
 
 const users: User[] = [
@@ -100,7 +109,7 @@ const users: User[] = [
     stripeCustomerId: '',
     stripeSubscriptionId: '',
     lastLoginAt: new Date(),
-    hasClaimedFreeTrial: false
+    hasClaimedFreeTrial: false,
   },
   {
     id: 'user2',
@@ -114,8 +123,8 @@ const users: User[] = [
     stripeCustomerId: '',
     stripeSubscriptionId: '',
     lastLoginAt: new Date(),
-    hasClaimedFreeTrial: true
-  }
+    hasClaimedFreeTrial: true,
+  },
 ];
 
 const bookings: Booking[] = [
@@ -132,7 +141,7 @@ const bookings: Booking[] = [
     lessonType: 'individual',
     status: 'scheduled',
     notes: 'Focus on business English',
-    isFreeTrial: false
+    isFreeTrial: false,
   },
   {
     id: 'booking2',
@@ -147,8 +156,8 @@ const bookings: Booking[] = [
     lessonType: 'group',
     status: 'scheduled',
     notes: 'Conversation practice',
-    isFreeTrial: false
-  }
+    isFreeTrial: false,
+  },
 ];
 
 const activeMeetings: ActiveMeeting[] = [
@@ -165,7 +174,7 @@ const activeMeetings: ActiveMeeting[] = [
     description: 'Group conversation practice',
     startTime: new Date(Date.now() - 30 * 60000), // 30 minutes ago
     callId: 'call2',
-  }
+  },
 ];
 
 const teacherStats = [
@@ -173,18 +182,26 @@ const teacherStats = [
     teacherId: 'teacher1',
     totalStudents: 10,
     totalLessons: 50,
-    totalEarnings: 875.00
+    totalEarnings: 875.0,
   },
   {
     teacherId: 'teacher2',
     totalStudents: 8,
     totalLessons: 40,
-    totalEarnings: 700.00
-  }
+    totalEarnings: 700.0,
+  },
 ];
 
 async function clearAllData(): Promise<void> {
-  const collections = ['teachers', 'subscriptionPlans', 'users', 'bookings', 'activeMeetings', 'teacherStats', 'availableSlots'];
+  const collections = [
+    'teachers',
+    'subscriptionPlans',
+    'users',
+    'bookings',
+    'activeMeetings',
+    'teacherStats',
+    'availableSlots',
+  ];
   for (const collectionName of collections) {
     const collectionRef = db.collection(collectionName);
     const snapshot = await collectionRef.get();
@@ -218,8 +235,8 @@ async function populateUsers(): Promise<void> {
       email: user.email || undefined,
       name: user.name || undefined,
       metadata: {
-        firebaseUserId: user.id
-      }
+        firebaseUserId: user.id,
+      },
     });
 
     user.stripeCustomerId = stripeCustomer.id;
@@ -227,11 +244,15 @@ async function populateUsers(): Promise<void> {
     // If the user has an active subscription, create it in Stripe
     if (user.subscriptionStatus === 'active' && user.subscriptionPlanId) {
       const stripePlan = await stripe.prices.create({
-        unit_amount: subscriptionPlans.find(plan => plan.id === user.subscriptionPlanId)!.price * 100,
+        unit_amount:
+          subscriptionPlans.find((plan) => plan.id === user.subscriptionPlanId)!
+            .price * 100,
         currency: 'usd',
         recurring: { interval: 'month' },
         product_data: {
-          name: subscriptionPlans.find(plan => plan.id === user.subscriptionPlanId)!.name,
+          name: subscriptionPlans.find(
+            (plan) => plan.id === user.subscriptionPlanId,
+          )!.name,
         },
       });
 
@@ -278,7 +299,10 @@ async function createAvailableSlots(): Promise<void> {
     const availableSlots: TimeSlot[] = [];
 
     while (currentDate <= endDate) {
-      const dayName = format(currentDate, 'EEEE') as keyof typeof teacher.availability;
+      const dayName = format(
+        currentDate,
+        'EEEE',
+      ) as keyof typeof teacher.availability;
       const teacherAvailability = teacher.availability[dayName];
 
       if (teacherAvailability && teacherAvailability.length > 0) {
@@ -287,7 +311,10 @@ async function createAvailableSlots(): Promise<void> {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          let slotStart = setMinutes(setHours(currentDate, startHour), startMinute);
+          let slotStart = setMinutes(
+            setHours(currentDate, startHour),
+            startMinute,
+          );
           const slotEnd = setMinutes(setHours(currentDate, endHour), endMinute);
 
           while (slotStart < slotEnd) {
@@ -305,9 +332,11 @@ async function createAvailableSlots(): Promise<void> {
     }
 
     await db.collection('availableSlots').doc(teacher.id).set({
-      slots: availableSlots
+      slots: availableSlots,
     });
-    console.log(`Created ${availableSlots.length} available slots for teacher ${teacher.name}`);
+    console.log(
+      `Created ${availableSlots.length} available slots for teacher ${teacher.name}`,
+    );
   }
 }
 

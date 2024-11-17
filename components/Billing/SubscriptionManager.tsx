@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { subscriptionPlans } from '@/constants/booking';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from '@/components/ui/use-toast';
 
 interface SubscriptionDetails {
   status: string;
@@ -17,7 +17,9 @@ interface SubscriptionDetails {
 export function SubscriptionManager() {
   const { user } = useUser();
   const { toast } = useToast();
-  const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionDetails | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -40,9 +42,9 @@ export function SubscriptionManager() {
       } catch (error) {
         console.error('Error fetching subscription:', error);
         toast({
-          title: "Error",
-          description: "Failed to load subscription details",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to load subscription details',
+          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -54,7 +56,7 @@ export function SubscriptionManager() {
 
   const handleUpdateSubscription = async (newPlanId: string) => {
     if (!user) return;
-    
+
     setIsUpdating(true);
     try {
       const response = await fetch('/api/subscriptions', {
@@ -71,16 +73,16 @@ export function SubscriptionManager() {
       if (data.clientSecret) {
         // Handle payment if needed
         toast({
-          title: "Success",
-          description: "Subscription updated successfully",
+          title: 'Success',
+          description: 'Subscription updated successfully',
         });
       }
     } catch (error) {
       console.error('Error updating subscription:', error);
       toast({
-        title: "Error",
-        description: "Failed to update subscription",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update subscription',
+        variant: 'destructive',
       });
     } finally {
       setIsUpdating(false);
@@ -89,7 +91,7 @@ export function SubscriptionManager() {
 
   const handleCancelSubscription = async () => {
     if (!user || !subscription) return;
-    
+
     setIsUpdating(true);
     try {
       const response = await fetch('/api/subscriptions', {
@@ -103,18 +105,20 @@ export function SubscriptionManager() {
       }
 
       toast({
-        title: "Success",
-        description: "Subscription cancelled successfully",
+        title: 'Success',
+        description: 'Subscription cancelled successfully',
       });
-      
+
       // Update local state
-      setSubscription(prev => prev ? { ...prev, status: 'canceled' } : null);
+      setSubscription((prev) =>
+        prev ? { ...prev, status: 'canceled' } : null,
+      );
     } catch (error) {
       console.error('Error cancelling subscription:', error);
       toast({
-        title: "Error",
-        description: "Failed to cancel subscription",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to cancel subscription',
+        variant: 'destructive',
       });
     } finally {
       setIsUpdating(false);
@@ -144,7 +148,10 @@ export function SubscriptionManager() {
             <div className="p-4 border rounded-lg">
               <h3 className="font-medium">Current Plan</h3>
               <p className="text-sm text-gray-500">
-                {subscriptionPlans.find(p => p.id === subscription.planId)?.name}
+                {
+                  subscriptionPlans.find((p) => p.id === subscription.planId)
+                    ?.name
+                }
               </p>
               <p className="text-sm text-gray-500">
                 Status: {subscription.status}
@@ -159,19 +166,20 @@ export function SubscriptionManager() {
                 <div>
                   <h3 className="font-medium mb-2">Change Plan</h3>
                   <div className="grid gap-2">
-                    {subscriptionPlans.map((plan) => (
-                      plan.id !== subscription.planId && (
-                        <Button
-                          key={plan.id}
-                          variant="outline"
-                          onClick={() => handleUpdateSubscription(plan.id)}
-                          disabled={isUpdating}
-                          className="w-full"
-                        >
-                          Switch to {plan.name}
-                        </Button>
-                      )
-                    ))}
+                    {subscriptionPlans.map(
+                      (plan) =>
+                        plan.id !== subscription.planId && (
+                          <Button
+                            key={plan.id}
+                            variant="outline"
+                            onClick={() => handleUpdateSubscription(plan.id)}
+                            disabled={isUpdating}
+                            className="w-full"
+                          >
+                            Switch to {plan.name}
+                          </Button>
+                        ),
+                    )}
                   </div>
                 </div>
 
@@ -189,7 +197,8 @@ export function SubscriptionManager() {
             {subscription.status === 'canceled' && (
               <Alert>
                 <AlertDescription>
-                  Your subscription will end on {format(subscription.currentPeriodEnd, 'MMMM d, yyyy')}
+                  Your subscription will end on{' '}
+                  {format(subscription.currentPeriodEnd, 'MMMM d, yyyy')}
                 </AlertDescription>
               </Alert>
             )}
@@ -214,4 +223,4 @@ export function SubscriptionManager() {
       </CardContent>
     </Card>
   );
-} 
+}

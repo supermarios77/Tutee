@@ -6,7 +6,7 @@ import { useCall, useCallStateHooks } from '@stream-io/video-react-sdk';
 const ShareScreenButton = () => {
   const { useScreenShareState, useHasOngoingScreenShare } = useCallStateHooks();
   const { screenShare, isMute: isScreenSharing } = useScreenShareState();
-  const call = useCall()
+  const call = useCall();
 
   // determine, whether somebody else is sharing their screen
   const isSomeoneScreenSharing = useHasOngoingScreenShare();

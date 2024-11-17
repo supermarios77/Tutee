@@ -39,7 +39,10 @@ const MeetingPage: React.FC = () => {
       const response = await fetch('/api/stream/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, userName: user.fullName || user.username || user.id }),
+        body: JSON.stringify({
+          userId: user.id,
+          userName: user.fullName || user.username || user.id,
+        }),
       });
 
       if (!response.ok) {
@@ -82,7 +85,10 @@ const MeetingPage: React.FC = () => {
         console.log('Call joined successfully');
       } catch (error) {
         console.error('Error joining call:', error);
-        if (error instanceof Error && !error.message.includes('Already joined')) {
+        if (
+          error instanceof Error &&
+          !error.message.includes('Already joined')
+        ) {
           setError('Failed to join call. Please try again.');
         }
       }

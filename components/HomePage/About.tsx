@@ -1,22 +1,37 @@
-'use client'
+'use client';
 
-import React from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { GraduationCapIcon, BookOpenIcon, UsersIcon } from "lucide-react";
+import React from 'react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { GraduationCapIcon, BookOpenIcon, UsersIcon } from 'lucide-react';
 
 export const About = () => {
   const imageUrl =
-    "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80";
+    'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80';
 
   const features = [
-    { icon: GraduationCapIcon, title: "Expert Tutors", description: "Learn from certified professionals" },
-    { icon: BookOpenIcon, title: "Tailored Learning", description: "Personalized lessons for your goals" },
-    { icon: UsersIcon, title: "Global Community", description: "Connect with learners worldwide" },
+    {
+      icon: GraduationCapIcon,
+      title: 'Expert Tutors',
+      description: 'Learn from certified professionals',
+    },
+    {
+      icon: BookOpenIcon,
+      title: 'Tailored Learning',
+      description: 'Personalized lessons for your goals',
+    },
+    {
+      icon: UsersIcon,
+      title: 'Global Community',
+      description: 'Connect with learners worldwide',
+    },
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-neutral-900" id="about">
+    <section
+      className="relative overflow-hidden bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-neutral-900"
+      id="about"
+    >
       <div className="max-w-[85rem] px-4 py-16 sm:px-6 lg:px-8 mx-auto">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
           <motion.div
@@ -46,7 +61,10 @@ export const About = () => {
               Elevate Your English Skills with Expert Guidance
             </h2>
             <p className="text-lg text-gray-300">
-              At Tutee, we're committed to empowering students to achieve fluency and confidence in English. Our experienced tutors provide personalized instruction tailored to your unique learning needs and goals.
+              At Tutee, we're committed to empowering students to achieve
+              fluency and confidence in English. Our experienced tutors provide
+              personalized instruction tailored to your unique learning needs
+              and goals.
             </p>
             <div className="grid gap-6 md:grid-cols-2">
               {features.map((feature, index) => (
@@ -61,7 +79,9 @@ export const About = () => {
                     <feature.icon className="w-6 h-6 text-blue-200" />
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
+                    <h3 className="text-lg font-semibold text-white">
+                      {feature.title}
+                    </h3>
                     <p className="mt-1 text-gray-300">{feature.description}</p>
                   </div>
                 </motion.div>

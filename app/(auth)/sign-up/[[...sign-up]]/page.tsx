@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { SignUp } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
-import { BookOpenIcon, GlobeIcon } from 'lucide-react'
+import { SignUp } from '@clerk/nextjs';
+import { motion } from 'framer-motion';
+import { BookOpenIcon, GlobeIcon } from 'lucide-react';
 
 export default function SignUpPage() {
   return (
@@ -10,7 +10,7 @@ export default function SignUpPage() {
       <div className="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left side: Animated background and content */}
-          <motion.div 
+          <motion.div
             className="md:w-1/2 bg-blue-600 p-8 flex flex-col justify-center items-center text-white"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -23,14 +23,14 @@ export default function SignUpPage() {
             <div className="flex justify-center space-x-4">
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                 className="bg-blue-500 rounded-full p-3"
               >
                 <BookOpenIcon size={40} />
               </motion.div>
               <motion.div
                 animate={{ rotate: -360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                 className="bg-blue-500 rounded-full p-3"
               >
                 <GlobeIcon size={40} />
@@ -39,13 +39,13 @@ export default function SignUpPage() {
           </motion.div>
 
           {/* Right side: Sign Up form */}
-          <motion.div 
+          <motion.div
             className="md:w-1/2 p-8"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <SignUp 
+            <SignUp
               appearance={{
                 elements: {
                   formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
@@ -59,5 +59,5 @@ export default function SignUpPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

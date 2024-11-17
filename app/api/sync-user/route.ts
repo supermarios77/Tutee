@@ -7,8 +7,15 @@ export async function POST(req: Request) {
   const { data, type } = payload;
 
   if (type === 'user.created' || type === 'user.updated') {
-    const { id, first_name, last_name, email_addresses, image_url, public_metadata } = data;
-    
+    const {
+      id,
+      first_name,
+      last_name,
+      email_addresses,
+      image_url,
+      public_metadata,
+    } = data;
+
     const userData = {
       id,
       firstName: first_name,
@@ -28,5 +35,8 @@ export async function POST(req: Request) {
     // Implement user deletion logic if needed
   }
 
-  return NextResponse.json({ success: false, error: 'Unsupported event type' }, { status: 400 });
+  return NextResponse.json(
+    { success: false, error: 'Unsupported event type' },
+    { status: 400 },
+  );
 }

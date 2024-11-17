@@ -1,15 +1,15 @@
 // app/layout.tsx
 
-import '@/styles/globals.css'
-import { Metadata, Viewport } from 'next'
-import Script from 'next/script'
-import { siteConfig } from '@/config/site'
-import { fontSans } from '@/config/fonts'
-import { Providers } from './providers'
-import PrelineScript from '@/components/PrelineScript'
-import clsx from 'clsx'
-import SchemaOrg from '@/components/SchemaOrg'
-import { Navbar } from '@/components/navbar'
+import '@/styles/globals.css';
+import { Metadata, Viewport } from 'next';
+import Script from 'next/script';
+import { siteConfig } from '@/config/site';
+import { fontSans } from '@/config/fonts';
+import { Providers } from './providers';
+import PrelineScript from '@/components/PrelineScript';
+import clsx from 'clsx';
+import SchemaOrg from '@/components/SchemaOrg';
+import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tutee.co.uk'),
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-}
+};
 
 export const viewport: Viewport = {
   themeColor: [
@@ -52,12 +52,12 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -69,12 +69,10 @@ export default function RootLayout({
       <body
         className={clsx(
           'min-h-screen bg-background font-sans antialiased',
-          fontSans.variable
+          fontSans.variable,
         )}
       >
-        <Providers
-          themeProps={{ attribute: 'class', defaultTheme: 'dark' }}
-        >
+        <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
           <div className="relative flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-grow">{children}</main>
@@ -103,5 +101,5 @@ export default function RootLayout({
         </Script>
       </body>
     </html>
-  )
+  );
 }

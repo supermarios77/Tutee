@@ -6,7 +6,10 @@ export async function POST(req: NextRequest) {
     const { userId, userName } = await req.json();
 
     if (!userId || !userName) {
-      return NextResponse.json({ error: 'User ID and name are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'User ID and name are required' },
+        { status: 400 },
+      );
     }
 
     const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
@@ -14,7 +17,10 @@ export async function POST(req: NextRequest) {
 
     if (!apiKey || !apiSecret) {
       console.error('Stream API key or secret is not defined');
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 },
+      );
     }
 
     const serverClient = StreamChat.getInstance(apiKey, apiSecret);
@@ -23,6 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ token });
   } catch (error) {
     console.error('Error generating token:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }

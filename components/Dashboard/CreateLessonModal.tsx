@@ -1,18 +1,29 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { StreamVideoClient } from '@stream-io/video-react-sdk'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { User } from '@/types/booking'  // Add this import
-import { checkForConflicts } from '@/utils/bookingUtils'
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { StreamVideoClient } from '@stream-io/video-react-sdk';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { User } from '@/types/booking'; // Add this import
+import { checkForConflicts } from '@/utils/bookingUtils';
 
 interface ExtendedUser extends User {
   fullName?: string;
@@ -26,47 +37,69 @@ interface CreateLessonModalProps {
   students: ExtendedUser[];
 }
 
-export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, students }: CreateLessonModalProps) {
-  const { user } = useUser()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState('')
-  const { toast } = useToast()
+export default function CreateLessonModal({
+  isOpen,
+  onClose,
+  onLessonCreated,
+  students,
+}: CreateLessonModalProps) {
+  const { user } = useUser();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const { toast } = useToast();
 
   // Remove the useEffect hook that fetches students
 
   const handleCreateLesson = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user || !selectedStudent) return
+    e.preventDefault();
+    if (!user || !selectedStudent) return;
 
     try {
       // Check for conflicts
-      const hasConflict = await checkForConflicts(user.id, date, startTime, endTime)
+      const hasConflict = await checkForConflicts(
+        user.id,
+        date,
+        startTime,
+        endTime,
+      );
       if (hasConflict) {
-        toast({ title: "Error", description: "There is a scheduling conflict. Please choose a different time.", variant: "destructive" })
-        return
+        toast({
+          title: 'Error',
+          description:
+            'There is a scheduling conflict. Please choose a different time.',
+          variant: 'destructive',
+        });
+        return;
       }
 
       // Create a Stream Video call
-      const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY
-      if (!apiKey) throw new Error('Stream API key is not defined')
+      const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+      if (!apiKey) throw new Error('Stream API key is not defined');
 
       const response = await fetch('/api/stream/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, userName: user.fullName || user.username || user.id }),
-      })
+        body: JSON.stringify({
+          userId: user.id,
+          userName: user.fullName || user.username || user.id,
+        }),
+      });
 
-      if (!response.ok) throw new Error('Failed to get Stream token')
+      if (!response.ok) throw new Error('Failed to get Stream token');
 
-      const { token } = await response.json()
+      const { token } = await response.json();
 
-      const client = new StreamVideoClient({ apiKey, user: { id: user.id }, token })
-      const call = client.call('default', crypto.randomUUID())
-      await call.getOrCreate()
+      const client = new StreamVideoClient({
+        apiKey,
+        user: { id: user.id },
+        token,
+      });
+      const call = client.call('default', crypto.randomUUID());
+      await call.getOrCreate();
 
       // Add lesson to Firebase
       await addDoc(collection(db, 'bookings'), {
@@ -78,22 +111,25 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
         startTime: startTime,
         endTime: calculateEndTime(startTime),
         callId: call.id,
-        status: 'scheduled'
-      })
+        status: 'scheduled',
+      });
 
-      toast({ title: "Lesson created successfully" })
-      onLessonCreated()
-      onClose()
+      toast({ title: 'Lesson created successfully' });
+      onLessonCreated();
+      onClose();
     } catch (error) {
-      console.error('Error creating lesson:', error)
-      toast({ title: "Failed to create lesson", description: "Please try again" })
+      console.error('Error creating lesson:', error);
+      toast({
+        title: 'Failed to create lesson',
+        description: 'Please try again',
+      });
     }
-  }
+  };
 
   function calculateEndTime(startTime: string): string {
-    const [hours, minutes] = startTime.split(':').map(Number)
-    const endDate = new Date(2000, 0, 1, hours + 1, minutes)
-    return endDate.toTimeString().slice(0, 5)
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endDate = new Date(2000, 0, 1, hours + 1, minutes);
+    return endDate.toTimeString().slice(0, 5);
   }
 
   return (
@@ -122,7 +158,10 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
             <SelectContent>
               {students.map((student: ExtendedUser) => (
                 <SelectItem key={student.id} value={student.id}>
-                  {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.username || 'Unnamed User'}
+                  {student.fullName ||
+                    `${student.firstName || ''} ${student.lastName || ''}`.trim() ||
+                    student.username ||
+                    'Unnamed User'}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -139,9 +178,11 @@ export default function CreateLessonModal({ isOpen, onClose, onLessonCreated, st
             onChange={(e) => setStartTime(e.target.value)}
             required
           />
-          <Button type="submit" className="w-full">Create Lesson</Button>
+          <Button type="submit" className="w-full">
+            Create Lesson
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,10 +1,15 @@
-"use client";
-import { useEffect, useState } from "react";
-import { parseCookies, setCookie } from "nookies";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
-import { Button } from "@nextui-org/react";
+'use client';
+import { useEffect, useState } from 'react';
+import { parseCookies, setCookie } from 'nookies';
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@nextui-org/dropdown';
+import { Button } from '@nextui-org/react';
 
-const COOKIE_NAME = "googtrans";
+const COOKIE_NAME = 'googtrans';
 
 interface LanguageDescriptor {
   name: string;
@@ -30,7 +35,7 @@ const LanguageSwitcher = () => {
 
     let languageValue;
     if (existingLanguageCookieValue) {
-      const sp = existingLanguageCookieValue.split("/");
+      const sp = existingLanguageCookieValue.split('/');
       if (sp.length > 2) {
         languageValue = sp[2];
       }
@@ -51,7 +56,7 @@ const LanguageSwitcher = () => {
   }
 
   const switchLanguage = (lang: string) => () => {
-    setCookie(null, COOKIE_NAME, "/auto/" + lang);
+    setCookie(null, COOKIE_NAME, '/auto/' + lang);
     window.location.reload();
   };
 

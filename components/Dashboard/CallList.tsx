@@ -28,19 +28,23 @@ const CallList = ({ type }: { type: 'upcoming' | 'ended' | 'recordings' }) => {
     const fetchLessons = async () => {
       if (!user) return;
 
-      const lessonsRef = collection(db, 'bookings');  // Changed from 'lessons' to 'bookings'
+      const lessonsRef = collection(db, 'bookings'); // Changed from 'lessons' to 'bookings'
       const now = new Date();
       const q = query(
         lessonsRef,
         where('teacherId', '==', user.id),
-        where('date', type === 'upcoming' ? '>=' : '<', now.toISOString().split('T')[0]),
-        orderBy('date', type === 'upcoming' ? 'asc' : 'desc')
+        where(
+          'date',
+          type === 'upcoming' ? '>=' : '<',
+          now.toISOString().split('T')[0],
+        ),
+        orderBy('date', type === 'upcoming' ? 'asc' : 'desc'),
       );
 
       const querySnapshot = await getDocs(q);
-      const fetchedLessons: Lesson[] = querySnapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() as Omit<Lesson, 'id'>
+      const fetchedLessons: Lesson[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Lesson, 'id'>),
       }));
       setLessons(fetchedLessons);
       setIsLoading(false);
@@ -70,7 +74,11 @@ const CallList = ({ type }: { type: 'upcoming' | 'ended' | 'recordings' }) => {
         lessons.map((lesson) => (
           <MeetingCard
             key={lesson.id}
-            icon={type === 'ended' ? '/assets/icons/previous.svg' : '/assets/icons/upcoming.svg'}
+            icon={
+              type === 'ended'
+                ? '/assets/icons/previous.svg'
+                : '/assets/icons/upcoming.svg'
+            }
             title={lesson.title}
             date={`${lesson.date} ${lesson.startTime} - ${lesson.endTime}`}
             isPreviousMeeting={type === 'ended'}

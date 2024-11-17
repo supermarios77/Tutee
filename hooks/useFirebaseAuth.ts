@@ -21,7 +21,10 @@ export function useFirebaseAuth() {
           const { firebaseToken } = await response.json();
 
           // Sign in to Firebase with the custom token
-          const userCredential = await signInWithCustomToken(auth, firebaseToken);
+          const userCredential = await signInWithCustomToken(
+            auth,
+            firebaseToken,
+          );
           const firebaseUser = userCredential.user;
           console.log('Firebase user signed in:', firebaseUser);
         } catch (error) {

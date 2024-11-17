@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
@@ -29,13 +29,16 @@ const PreviousLessons = () => {
         where('studentId', '==', user.id),
         where('date', '<', new Date().toISOString().split('T')[0]),
         orderBy('date', 'desc'),
-        orderBy('startTime', 'desc')
+        orderBy('startTime', 'desc'),
       );
       const querySnapshot = await getDocs(q);
-      const fetchedLessons = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Booking));
+      const fetchedLessons = querySnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as Booking,
+      );
       setLessons(fetchedLessons);
     } catch (error) {
       console.error('Error fetching previous lessons:', error);
@@ -60,7 +63,9 @@ const PreviousLessons = () => {
               </CardHeader>
               <CardContent>
                 <p>Date: {format(new Date(lesson.date), 'MMMM d, yyyy')}</p>
-                <p>Time: {lesson.startTime} - {lesson.endTime}</p>
+                <p>
+                  Time: {lesson.startTime} - {lesson.endTime}
+                </p>
                 <p>Teacher: {lesson.teacherName || 'Unknown Teacher'}</p>
               </CardContent>
             </Card>

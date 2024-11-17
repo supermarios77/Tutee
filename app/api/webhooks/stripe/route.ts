@@ -2,7 +2,16 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, setDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+} from 'firebase/firestore';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -57,7 +66,7 @@ export async function POST(request: Request) {
     console.error('Webhook error:', error);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,13 +85,13 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
-  
+
   try {
     // Query user by stripeCustomerId
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('stripeCustomerId', '==', customerId));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
       console.error('No user found with customer ID:', customerId);
       return;
@@ -96,7 +105,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionStatus: subscription.status,
       subscriptionPlanId: subscription.items.data[0].price.id,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      stripeSubscriptionId: subscription.id
+      stripeSubscriptionId: subscription.id,
     });
 
     // Create subscription record
@@ -107,9 +116,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
-
   } catch (error) {
     console.error('Error updating subscription:', error);
     throw error;
@@ -118,13 +126,13 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
-  
+
   try {
     // Query user by stripeCustomerId
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('stripeCustomerId', '==', customerId));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
       console.error('No user found with customer ID:', customerId);
       return;
@@ -143,9 +151,8 @@ async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
     await updateDoc(doc(db, 'subscriptions', subscription.id), {
       status: 'canceled',
       canceledAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
-
   } catch (error) {
     console.error('Error handling subscription deletion:', error);
     throw error;
@@ -154,7 +161,7 @@ async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
-  
+
   try {
     // Create invoice record
     await setDoc(doc(db, 'invoices', invoice.id), {
@@ -166,7 +173,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       invoiceUrl: invoice.hosted_invoice_url,
       pdfUrl: invoice.invoice_pdf,
       createdAt: new Date(invoice.created * 1000),
-      paidAt: invoice.status === 'paid' ? new Date() : null
+      paidAt: invoice.status === 'paid' ? new Date() : null,
     });
 
     // Update payment history
@@ -177,9 +184,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       currency: invoice.currency,
       status: 'succeeded',
       type: 'invoice_payment',
-      createdAt: new Date()
+      createdAt: new Date(),
     });
-
   } catch (error) {
     console.error('Error handling invoice payment:', error);
     throw error;
@@ -188,13 +194,13 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
-  
+
   try {
     // Query user by stripeCustomerId
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('stripeCustomerId', '==', customerId));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
       console.error('No user found with customer ID:', customerId);
       return;
@@ -210,7 +216,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       status: 'failed',
       subscriptionId: invoice.subscription,
       createdAt: new Date(invoice.created * 1000),
-      failedAt: new Date()
+      failedAt: new Date(),
     });
 
     // Add to payment history
@@ -221,14 +227,13 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       currency: invoice.currency,
       status: 'failed',
       type: 'invoice_payment_failed',
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // TODO: Implement notification system
     // await sendPaymentFailedNotification(userDoc.id);
-
   } catch (error) {
     console.error('Error handling failed invoice payment:', error);
     throw error;
   }
-} 
+}

@@ -23,7 +23,11 @@ const CameraButton: React.FC = () => {
       variant="outline"
       size="icon"
       onClick={handleToggleCamera}
-      className={isCameraOn ? 'bg-green-500 dark:bg-greeb-500' : 'bg-red-500 dark:bg-red-500'}
+      className={
+        isCameraOn
+          ? 'bg-green-500 dark:bg-greeb-500'
+          : 'bg-red-500 dark:bg-red-500'
+      }
     >
       {isCameraOn ? (
         <CameraIcon className="h-5 w-5" />

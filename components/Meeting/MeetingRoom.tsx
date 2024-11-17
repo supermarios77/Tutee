@@ -5,7 +5,7 @@ import {
   PaginatedGridLayout,
   SpeakerLayout,
   useCallStateHooks,
-  useCall
+  useCall,
 } from '@stream-io/video-react-sdk';
 import useSound from 'use-sound';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,8 @@ const MeetingRoom: React.FC = () => {
   const callingState = useCallCallingState();
   const call = useCall();
   const callId = call?.id || '';
-  const { status: screenShareStatus, mediaStream: screenShareMediaStream } = useScreenShareState();
+  const { status: screenShareStatus, mediaStream: screenShareMediaStream } =
+    useScreenShareState();
 
   const [playJoinSound] = useSound('/assets/audio/join.mp3');
   const [playLeaveSound] = useSound('/assets/audio/leave.mp3');

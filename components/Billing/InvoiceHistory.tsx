@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
   getDocs,
   doc,
   getDoc,
-  DocumentData 
+  DocumentData,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FileText, Download, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -53,15 +53,15 @@ export function InvoiceHistory() {
         const q = query(
           invoicesRef,
           where('customerId', '==', customerId),
-          orderBy('createdAt', 'desc')
+          orderBy('createdAt', 'desc'),
         );
 
         const querySnapshot = await getDocs(q);
-        const fetchedInvoices = querySnapshot.docs.map(doc => ({
+        const fetchedInvoices = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
           createdAt: doc.data().createdAt.toDate(),
-          paidAt: doc.data().paidAt?.toDate() || null
+          paidAt: doc.data().paidAt?.toDate() || null,
         })) as Invoice[];
 
         setInvoices(fetchedInvoices);
@@ -126,11 +126,13 @@ export function InvoiceHistory() {
                 <p className="text-sm text-gray-500">
                   {format(invoice.createdAt, 'MMM d, yyyy')}
                 </p>
-                <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                  invoice.status === 'paid' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
+                <span
+                  className={`inline-block px-2 py-1 text-xs rounded-full ${
+                    invoice.status === 'paid'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
                   {invoice.status}
                 </span>
               </div>
@@ -158,4 +160,4 @@ export function InvoiceHistory() {
       </CardContent>
     </Card>
   );
-} 
+}

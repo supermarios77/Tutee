@@ -1,12 +1,18 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Users, BookOpen, DollarSign, Settings, HelpCircle } from 'lucide-react';
+import {
+  Users,
+  BookOpen,
+  DollarSign,
+  Settings,
+  HelpCircle,
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      
+
       <section className="mb-6">
         <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -46,7 +52,10 @@ export default function AdminDashboard() {
       <section className="mb-6">
         <h2 className="text-2xl font-semibold mb-4">Dashboard Overview</h2>
         {/* Add dashboard summary components here */}
-        <p>Add summary cards, charts, or other relevant information for the admin dashboard overview.</p>
+        <p>
+          Add summary cards, charts, or other relevant information for the admin
+          dashboard overview.
+        </p>
       </section>
     </div>
   );

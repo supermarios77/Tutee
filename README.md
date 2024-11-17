@@ -1,51 +1,65 @@
-# Next.js & NextUI Template
+# Tutee - Online Language Learning Platform
 
-This is a template for creating applications using Next.js 14 (app directory) and NextUI (v2).
+## Overview
+Tutee is a modern online platform connecting language learners with qualified English tutors through interactive video sessions. Built with Next.js 14 and leveraging real-time video capabilities, Tutee provides a seamless learning experience with flexible scheduling and subscription-based pricing.
 
-## Technologies Used
+## Features
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [NextUI v2](https://nextui.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+### Core Functionality
+- **Video Learning Sessions**: High-quality video calls powered by Stream.io
+- **Smart Scheduling**: Flexible booking system with timezone support
+- **Subscription Management**: Various learning plans with Stripe integration
+- **User Dashboard**: Track progress and manage bookings
+- **Real-time Notifications**: Stay updated on lessons and changes
 
-## How to Use
+### For Students
+- Book individual or group sessions
+- Choose from verified tutors
+- Track learning progress
+- Access learning materials
+- Manage subscriptions and payments
+- View session history
 
-### Use the template with create-next-app
+### For Tutors
+- Manage availability calendar
+- Track upcoming sessions
+- Access student profiles
+- Handle booking requests
+- View earnings and statistics
 
-To create a new project based on this template using `create-next-app`, run the following command:
+## Technical Stack
 
-```bash
-npx create-next-app -e https://github.com/nextui-org/next-app-template
-```
+### Frontend
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- NextUI v2
+- Framer Motion
+- Lucide Icons
 
-### Install dependencies
+### Backend & Services
+- Firebase (Firestore)
+- Clerk Authentication
+- Stream.io Video SDK
+- Stripe Payments
+- Next.js API Routes
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+### Development Tools
+- ESLint
+- Prettier
+- Husky
+- TypeScript
+- pnpm (Package Manager)
 
-```bash
-npm install
-```
+## Getting Started
 
-### Run the development server
+### Prerequisites
+- Node.js 18+
+- pnpm
+- Firebase Account
+- Stripe Account
+- Stream.io Account
+- Clerk Account
 
-```bash
-npm run dev
-```
-
-### Setup pnpm (optional)
-
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@nextui-org/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/nextui-org/next-app-template/blob/main/LICENSE).
+### Environment Setup
+Create a `.env.local` file with:

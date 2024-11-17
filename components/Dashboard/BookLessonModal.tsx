@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import LessonBooking from '@/components/Bookings/LessonBooking';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ManageUpcomingLessons from './ManageUpcomingLessons';
 
 interface BookLessonModalProps {
@@ -12,7 +17,10 @@ interface BookLessonModalProps {
   onClose: () => void;
 }
 
-export default function BookLessonModal({ isOpen, onClose }: BookLessonModalProps) {
+export default function BookLessonModal({
+  isOpen,
+  onClose,
+}: BookLessonModalProps) {
   const { user } = useUser();
   const [hasPaidPlan, setHasPaidPlan] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +49,9 @@ export default function BookLessonModal({ isOpen, onClose }: BookLessonModalProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{hasPaidPlan ? "Manage Your Lessons" : "Book a New Lesson"}</DialogTitle>
+          <DialogTitle>
+            {hasPaidPlan ? 'Manage Your Lessons' : 'Book a New Lesson'}
+          </DialogTitle>
         </DialogHeader>
         {hasPaidPlan ? (
           <Tabs defaultValue="upcoming">

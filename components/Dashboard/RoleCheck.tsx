@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
@@ -28,7 +28,9 @@ export default function RoleCheck({ children, allowedRoles }: RoleCheckProps) {
   }
 
   if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) {
-    return <Alert title="Access Denied" iconUrl="/assets/icons/access-denied.svg" />;
+    return (
+      <Alert title="Access Denied" iconUrl="/assets/icons/access-denied.svg" />
+    );
   }
 
   return <>{children}</>;

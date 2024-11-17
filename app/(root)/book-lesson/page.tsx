@@ -1,50 +1,70 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { collection, query, where, getDocs } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
-import { checkForConflicts } from '@/utils/bookingUtils'
-import { addDoc } from 'firebase/firestore'
-import { useRouter } from 'next/navigation'
-import { Teacher } from '@/types/booking'  // Add this import
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { checkForConflicts } from '@/utils/bookingUtils';
+import { addDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { Teacher } from '@/types/booking'; // Add this import
 
 export default function BookLessonPage() {
-  const { user } = useUser()
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [selectedTeacher, setSelectedTeacher] = useState('')
-  const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
-  const router = useRouter()
+  const { user } = useUser();
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [selectedTeacher, setSelectedTeacher] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
-    fetchTeachers()
-  }, [])
+    fetchTeachers();
+  }, []);
 
   const fetchTeachers = async () => {
-    const teachersRef = collection(db, 'users')
-    const q = query(teachersRef, where('role', '==', 'teacher'))
-    const querySnapshot = await getDocs(q)
-    setTeachers(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher)))
-  }
+    const teachersRef = collection(db, 'users');
+    const q = query(teachersRef, where('role', '==', 'teacher'));
+    const querySnapshot = await getDocs(q);
+    setTeachers(
+      querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as Teacher,
+      ),
+    );
+  };
 
   const handleBookLesson = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user || !selectedTeacher || !date || !time) return
+    e.preventDefault();
+    if (!user || !selectedTeacher || !date || !time) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const hasConflict = await checkForConflicts(selectedTeacher, date, time, calculateEndTime(time))
+      const hasConflict = await checkForConflicts(
+        selectedTeacher,
+        date,
+        time,
+        calculateEndTime(time),
+      );
       if (hasConflict) {
-        toast({ title: "Error", description: "There is a scheduling conflict. Please choose a different time.", variant: "destructive" })
-        return
+        toast({
+          title: 'Error',
+          description:
+            'There is a scheduling conflict. Please choose a different time.',
+          variant: 'destructive',
+        });
+        return;
       }
 
       await addDoc(collection(db, 'bookings'), {
@@ -53,23 +73,27 @@ export default function BookLessonPage() {
         date,
         startTime: time,
         endTime: calculateEndTime(time),
-        status: 'scheduled'
-      })
+        status: 'scheduled',
+      });
 
-      toast({ title: "Success", description: "Lesson booked successfully." })
-      router.push('/student-dashboard')
+      toast({ title: 'Success', description: 'Lesson booked successfully.' });
+      router.push('/student-dashboard');
     } catch (error) {
-      console.error('Error booking lesson:', error)
-      toast({ title: "Error", description: "Failed to book lesson. Please try again.", variant: "destructive" })
+      console.error('Error booking lesson:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to book lesson. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   function calculateEndTime(startTime: string): string {
-    const [hours, minutes] = startTime.split(':').map(Number)
-    const endDate = new Date(2000, 0, 1, hours + 1, minutes)
-    return endDate.toTimeString().slice(0, 5)
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endDate = new Date(2000, 0, 1, hours + 1, minutes);
+    return endDate.toTimeString().slice(0, 5);
   }
 
   return (
@@ -87,7 +111,8 @@ export default function BookLessonPage() {
               <SelectContent>
                 {teachers.map((teacher) => (
                   <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.name || `${teacher.firstName} ${teacher.lastName}`.trim()}
+                    {teacher.name ||
+                      `${teacher.firstName} ${teacher.lastName}`.trim()}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -112,5 +137,5 @@ export default function BookLessonPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

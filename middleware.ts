@@ -9,7 +9,7 @@ const protectedRoute = createRouteMatcher([
   '/dashboard/personal-room',
   '/student-dashboard/',
   '/student-dashboard/upcoming',
-  '/admin-dashboard'  // Add this line
+  '/admin-dashboard', // Add this line
 ]);
 
 export default clerkMiddleware((auth, req) => {

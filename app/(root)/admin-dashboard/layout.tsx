@@ -5,9 +5,5 @@ export default function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <RoleCheck allowedRoles={['admin']}>
-      {children}
-    </RoleCheck>
-  );
+  return <RoleCheck allowedRoles={['admin']}>{children}</RoleCheck>;
 }

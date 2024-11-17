@@ -4,7 +4,11 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['images.unsplash.com', 'lh3.googleusercontent.com', 'img.clerk.com'],
+    domains: [
+      'images.unsplash.com',
+      'lh3.googleusercontent.com',
+      'img.clerk.com',
+    ],
   },
   webpack: (config) => {
     // @ts-ignore: Ignoring TS errors

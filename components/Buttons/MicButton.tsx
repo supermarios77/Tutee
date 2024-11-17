@@ -23,7 +23,11 @@ const MicButton: React.FC = () => {
       variant="outline"
       size="icon"
       onClick={handleToggleMicrophone}
-      className={isMicOn ? 'bg-green-500 dark:bg-green-500' : 'bg-red-500 dark:bg-red-500'}
+      className={
+        isMicOn
+          ? 'bg-green-500 dark:bg-green-500'
+          : 'bg-red-500 dark:bg-red-500'
+      }
     >
       {isMicOn ? (
         <MicIcon className="h-5 w-5" />

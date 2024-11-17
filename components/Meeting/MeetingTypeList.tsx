@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useUser } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Clock, Users, Plus } from 'lucide-react';
 import ReactDatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
 import Loader from '../Loader';
 
 const initialValues = {
@@ -111,7 +111,9 @@ export default function MeetingTypeList() {
                   </label>
                   <Textarea
                     className="w-full"
-                    onChange={(e) => setValues({ ...values, description: e.target.value })}
+                    onChange={(e) =>
+                      setValues({ ...values, description: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -120,7 +122,9 @@ export default function MeetingTypeList() {
                   </label>
                   <ReactDatePicker
                     selected={values.dateTime}
-                    onChange={(date) => setValues({ ...values, dateTime: date! })}
+                    onChange={(date) =>
+                      setValues({ ...values, dateTime: date! })
+                    }
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={15}
@@ -157,9 +161,13 @@ export default function MeetingTypeList() {
               <div className="space-y-4">
                 <Input
                   placeholder="Meeting link"
-                  onChange={(e) => setValues({ ...values, link: e.target.value })}
+                  onChange={(e) =>
+                    setValues({ ...values, link: e.target.value })
+                  }
                 />
-                <Button onClick={() => router.push(values.link)}>Join Meeting</Button>
+                <Button onClick={() => router.push(values.link)}>
+                  Join Meeting
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -168,7 +176,9 @@ export default function MeetingTypeList() {
         {meetingState === 'isInstantMeeting' && (
           <Card className="mt-4">
             <CardContent className="pt-6 text-center">
-              <h3 className="text-lg font-semibold mb-4">Start an Instant Meeting</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Start an Instant Meeting
+              </h3>
               <Button onClick={createMeeting}>Start Meeting</Button>
             </CardContent>
           </Card>

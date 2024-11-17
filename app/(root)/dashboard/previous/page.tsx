@@ -1,4 +1,4 @@
-import CallList from "@/components/Dashboard/CallList";
+import CallList from '@/components/Dashboard/CallList';
 
 const PreviousPage = () => {
   return (

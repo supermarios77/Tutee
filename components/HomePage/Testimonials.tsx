@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -7,23 +7,29 @@ import { QuoteIcon } from 'lucide-react';
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "My tutor is a great teacher. She helped me to read and learn new words and idioms with patience. Thanks for this knowledgeable session.",
-      author: "Ali, Turkiye",
+      quote:
+        'My tutor is a great teacher. She helped me to read and learn new words and idioms with patience. Thanks for this knowledgeable session.',
+      author: 'Ali, Turkiye',
     },
     {
-      quote: "My tutor always makes me feel comfortable and knows how to make good conversation! I really enjoy the classes every time!",
-      author: "Kim, South Korea",
+      quote:
+        'My tutor always makes me feel comfortable and knows how to make good conversation! I really enjoy the classes every time!',
+      author: 'Kim, South Korea',
     },
     {
-      quote: "My tutor is super nice and friendly! During her classes, you will always have her undivided attention. She is a good listener as well as a nice person to talk to.",
-      author: "Hannah, China",
+      quote:
+        'My tutor is super nice and friendly! During her classes, you will always have her undivided attention. She is a good listener as well as a nice person to talk to.',
+      author: 'Hannah, China',
     },
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 dark:from-blue-900 dark:to-neutral-900" id="testimonials">
+    <section
+      className="relative overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 dark:from-blue-900 dark:to-neutral-900"
+      id="testimonials"
+    >
       <div className="max-w-[85rem] px-4 py-16 sm:px-6 lg:px-8 mx-auto">
-        <motion.h2 
+        <motion.h2
           className="text-3xl font-bold text-center text-white mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

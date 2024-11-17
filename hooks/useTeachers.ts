@@ -16,7 +16,9 @@ export const useTeachers = () => {
       try {
         const teachersRef = collection(db, 'teachers');
         const teachersSnapshot = await getDocs(teachersRef);
-        const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher));
+        const teachersData = teachersSnapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as Teacher,
+        );
         setTeachers(teachersData);
       } catch (error) {
         console.error('Error fetching teachers:', error);

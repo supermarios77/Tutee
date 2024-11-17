@@ -6,7 +6,7 @@ import { doc, setDoc } from 'firebase/firestore';
 export async function GET() {
   try {
     const { data: users } = await clerkClient.users.getUserList();
-    
+
     for (const user of users) {
       const userData = {
         id: user.id,
@@ -22,9 +22,15 @@ export async function GET() {
       await setDoc(doc(db, 'users', user.id), userData, { merge: true });
     }
 
-    return NextResponse.json({ success: true, message: 'Initial sync completed' });
+    return NextResponse.json({
+      success: true,
+      message: 'Initial sync completed',
+    });
   } catch (error) {
     console.error('Error during initial sync:', error);
-    return NextResponse.json({ success: false, error: 'Initial sync failed' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Initial sync failed' },
+      { status: 500 },
+    );
   }
 }

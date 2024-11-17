@@ -1,13 +1,26 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { collection, query, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User } from '@/types/booking';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useToast } from '@/components/ui/use-toast';
 
 const roles = ['student', 'teacher', 'admin', 'banned'];
 
@@ -25,11 +38,17 @@ export default function UserManagement() {
     try {
       const usersRef = collection(db, 'users');
       const usersSnapshot = await getDocs(usersRef);
-      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+      const usersData = usersSnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as User,
+      );
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast({ title: "Error", description: "Failed to fetch users.", variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch users.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -39,11 +58,22 @@ export default function UserManagement() {
     try {
       const userRef = doc(db, 'users', userId);
       await updateDoc(userRef, { role: newRole });
-      setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
-      toast({ title: "Success", description: "User role updated successfully." });
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user,
+        ),
+      );
+      toast({
+        title: 'Success',
+        description: 'User role updated successfully.',
+      });
     } catch (error) {
       console.error('Error updating user role:', error);
-      toast({ title: "Error", description: "Failed to update user role.", variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: 'Failed to update user role.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -73,7 +103,9 @@ export default function UserManagement() {
                 <TableCell>
                   <Select
                     value={user.role}
-                    onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                    onValueChange={(newRole) =>
+                      handleRoleChange(user.id, newRole)
+                    }
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select a role" />

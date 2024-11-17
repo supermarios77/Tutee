@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Booking } from '@/types/booking';
 
@@ -25,16 +32,16 @@ export function useUserBookingInfo() {
 
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
-          
+
           // Fetch user's bookings
           const bookingsQuery = query(
             collection(db, 'bookings'),
-            where('studentId', '==', user.id)
+            where('studentId', '==', user.id),
           );
           const bookingsSnapshot = await getDocs(bookingsQuery);
-          const bookings = bookingsSnapshot.docs.map(doc => ({
+          const bookings = bookingsSnapshot.docs.map((doc) => ({
             id: doc.id,
-            ...doc.data()
+            ...doc.data(),
           })) as Booking[];
 
           setUserBookingInfo({

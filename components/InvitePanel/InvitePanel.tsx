@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Icon, IconButton, useI18n } from '@stream-io/video-react-sdk';
 
-import "@/styles/InvitePanel/InvitePanel.scss";
+import '@/styles/InvitePanel/InvitePanel.scss';
 
 export const InvitePopup = ({
   callId,

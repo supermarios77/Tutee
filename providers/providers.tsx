@@ -1,13 +1,13 @@
 // app/providers.tsx
-'use client'
+'use client';
 
-import * as React from 'react'
-import { NextUIProvider } from '@nextui-org/system'
-import { useRouter } from 'next/navigation'
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import { ThemeProviderProps } from 'next-themes/dist/types'
-import { ClerkProvider } from '@clerk/nextjs'
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
+import * as React from 'react';
+import { NextUIProvider } from '@nextui-org/system';
+import { useRouter } from 'next/navigation';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProviderProps } from 'next-themes/dist/types';
+import { ClerkProvider } from '@clerk/nextjs';
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 
 function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
   useFirebaseAuth();
@@ -15,12 +15,12 @@ function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export interface ProvidersProps {
-  children: React.ReactNode
-  themeProps?: Omit<ThemeProviderProps, 'children'>
+  children: React.ReactNode;
+  themeProps?: Omit<ThemeProviderProps, 'children'>;
 }
 
 export function Providers({ children, themeProps }: ProvidersProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <ClerkProvider
@@ -36,5 +36,5 @@ export function Providers({ children, themeProps }: ProvidersProps) {
         </NextUIProvider>
       </FirebaseAuthProvider>
     </ClerkProvider>
-  )
+  );
 }

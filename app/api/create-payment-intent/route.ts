@@ -18,15 +18,18 @@ export async function POST(request: Request) {
     const { amount, currency, subscriptionPlanId } = await request.json();
 
     if (!amount || !currency) {
-      return NextResponse.json({ error: 'Amount and currency are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Amount and currency are required' },
+        { status: 400 },
+      );
     }
 
     // Get or create Stripe customer
     const userDoc = await getDoc(doc(db, 'users', userId));
     const userData = userDoc.data();
-    
+
     let customerId = userData?.stripeCustomerId;
-    
+
     if (!customerId) {
       // Create a new customer
       const customer = await stripe.customers.create({
@@ -53,15 +56,15 @@ export async function POST(request: Request) {
       setup_future_usage: 'off_session', // Enable future payments
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       customerId,
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);
     return NextResponse.json(
-      { error: 'Error creating payment intent' }, 
-      { status: 500 }
+      { error: 'Error creating payment intent' },
+      { status: 500 },
     );
   }
 }

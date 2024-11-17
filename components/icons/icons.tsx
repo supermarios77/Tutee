@@ -214,7 +214,7 @@ export const NextUILogo: React.FC<IconSvgProps> = (props) => {
 };
 
 export function CameraIcon(
-  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
 ) {
   return (
     <svg
@@ -236,7 +236,7 @@ export function CameraIcon(
 }
 
 export function FilterIcon(
-  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
 ) {
   return (
     <svg
@@ -257,7 +257,7 @@ export function FilterIcon(
 }
 
 export function MicIcon(
-  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
 ) {
   return (
     <svg
@@ -279,7 +279,9 @@ export function MicIcon(
   );
 }
 
-export function CloudyIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function CloudyIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -296,11 +298,12 @@ export function CloudyIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps
       <path d="M17.5 21H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
       <path d="M22 10a3 3 0 0 0-3-3h-2.207a5.502 5.502 0 0 0-10.702.5" />
     </svg>
-  )
+  );
 }
 
-
-export function ContrastIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function ContrastIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -317,11 +320,12 @@ export function ContrastIcon(props: React.JSX.IntrinsicAttributes & React.SVGPro
       <circle cx="12" cy="12" r="10" />
       <path d="M12 18a6 6 0 0 0 0-12v12z" />
     </svg>
-  )
+  );
 }
 
-
-export function MoveHorizontalIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function MoveHorizontalIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -339,11 +343,12 @@ export function MoveHorizontalIcon(props: React.JSX.IntrinsicAttributes & React.
       <polyline points="6 8 2 12 6 16" />
       <line x1="2" x2="22" y1="12" y2="12" />
     </svg>
-  )
+  );
 }
 
-
-export function PhoneIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function PhoneIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -359,11 +364,12 @@ export function PhoneIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<
     >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
-  )
+  );
 }
 
-
-export function ShareIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function ShareIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -381,11 +387,12 @@ export function ShareIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<
       <polyline points="16 6 12 2 8 6" />
       <line x1="12" x2="12" y1="2" y2="15" />
     </svg>
-  )
+  );
 }
 
-
-export function VideoIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
+export function VideoIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
+) {
   return (
     <svg
       {...props}
@@ -402,5 +409,5 @@ export function VideoIcon(props: React.JSX.IntrinsicAttributes & React.SVGProps<
       <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
       <rect x="2" y="6" width="14" height="12" rx="2" />
     </svg>
-  )
+  );
 }
