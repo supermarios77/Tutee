@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "postbuild": "next-sitemap",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "check": "yarn format && yarn lint && yarn typecheck"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.4.1",
