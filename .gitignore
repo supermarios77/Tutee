@@ -27,7 +27,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
-
+.env.prod
 # vercel
 .vercel
 
@@ -35,3 +35,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 tutee-uk-firebase-adminsdk-salk4-a7df43c6ad.json
+progress.md
